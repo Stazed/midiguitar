@@ -3,7 +3,6 @@
 
 
 #include <FL/Fl.H>
-//#include <FL/Fl_Window.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Spinner.H>
@@ -57,11 +56,6 @@ uint const guitarReverseNote[6][25]=
 };
 
 extern uint note_array[6][25];
-
-extern void spin_callback(Fl_Spinner *b, void *);
-extern void reset_callback(Fl_Button *, void *);
-extern void control_callback(Fl_Button *b);
-
 extern bool bReset;
 extern bool bcontrol;
 extern uint Guitar_String_Param;
@@ -82,6 +76,10 @@ private:
 
     struct pollfd *mPollFds;
     int mPollMax, in_port, out_port;
+
+    static void spin_callback(Fl_Spinner*, void*);
+    static void reset_callback(Fl_Button*, void*);
+    static void control_callback(Fl_Button *b);
 
     snd_seq_t* mHandle; // handle and client for system notification events
 
@@ -114,8 +112,7 @@ public:
     void fretToggle(uint note,bool on_off);
 
     void reset_all_controls(void);
-    
-    //void spin_callback(Fl_Spinner *b, void *);
+
 };
 
 

@@ -1,5 +1,5 @@
 #include "guitar.h"
-#include <FL/Fl.H>
+//#include <FL/Fl.H>
 #include <FL/fl_ask.H>
 #include <math.h>
 
@@ -7,28 +7,6 @@ bool bReset = false;
 bool bcontrol = true;
 uint occurrence = 0;
 
-
-void spin_callback(Fl_Spinner *b, void *)
-{
-    octave = b->value();
-}
-
-void reset_callback(Fl_Button *, void *)
-{
-    bReset = true;
-}
-
-void control_callback(Fl_Button * b)
-{
-    if(b->value() == 1)
-    {
-        bcontrol = false;
-    }
-    else
-    {
-        bcontrol = true;
-    }
-}
 
 Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
 {
@@ -399,9 +377,26 @@ void Guitar::fretToggle(uint note,bool on_off)
      }
      occur_count = 1;
  }
-/*
-void Guitar::spin_callback(Fl_Spinner *b, void *)
+
+void Guitar::spin_callback(Fl_Spinner* b, void*)
 {
     octave = b->value();
 }
- */
+
+void Guitar::reset_callback(Fl_Button*, void*)
+{
+    bReset = true;
+}
+
+void Guitar::control_callback(Fl_Button *b)
+{
+    if(b->value() == 1)
+    {
+        bcontrol = false;
+    }
+    else
+    {
+        bcontrol = true;
+    }
+}
+
