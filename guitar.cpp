@@ -1,5 +1,4 @@
 #include "guitar.h"
-//#include <FL/Fl.H>
 #include <FL/fl_ask.H>
 #include <math.h>
 
@@ -34,13 +33,13 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
     } //
 
     {
-        Fl_Text_Display* o = new Fl_Text_Display(210, 15, 0, 0, "Occurance");
+        Fl_Text_Display* o = new Fl_Text_Display(210, 15, 0, 0, "Occurrence");
         o->box(FL_UP_FRAME);
         o->labelfont(9);
         o->labelsize(10);
     }
     int x = 140;
-    for(int i = 0; i < 6; i++)
+    for(int i = 0; i < 6; i++) // Occurrence buttons
     {
         Fl_Button* o = new Fl_Button(x, 40, 15, 15);
         o->box(FL_ROUND_UP_BOX);
@@ -55,17 +54,17 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
     int n = 0;
 
     {
-        Fl_Button* b = new Fl_Button(60,80,15,15);    // first OPEN string position
+        Fl_Button* b = new Fl_Button(60,80,15,15);    // first OPEN string position 
         b->box(FL_ROUND_UP_BOX);
         b->labelsize(9);
-        b->copy_label(SSTR( n ).c_str());
+        b->copy_label(SSTR( n ).c_str()); // position 0
         b->color(FL_GREEN);
         b->color2(FL_BLACK);
         b->align(Fl_Align(FL_ALIGN_TOP));
         fret_Off_On[n]=b;
         n++;
     }
-    for(int x=0; x<24; x++) // the actual frets
+    for(int x=0; x<24; x++) // the numbered fret positions & round buttons
     {
         float distance1 = Guitar::fret_distance(x);
         float distance2 = Guitar::fret_distance(x+1);
@@ -74,7 +73,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         Fl_Button* b = new Fl_Button((X*60.4)+90,80,15,15);
         b->box(FL_ROUND_UP_BOX);
         b->labelsize(9);
-        b->copy_label(SSTR( n ).c_str());
+        b->copy_label(SSTR( n ).c_str()); // n = 1 to 24
         b->color(FL_GREEN);
         b->color2(FL_BLACK);
         b->align(Fl_Align(FL_ALIGN_TOP));
@@ -91,7 +90,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         b->color2(FL_RED);
         fret[n]=b;
         n++;
-        for (int x=0; x<24; x++)
+        for (int x=0; x<24; x++) // The actual frets
         {
             float distance1 = Guitar::fret_distance(x);
             float distance2 = Guitar::fret_distance(x+1);
@@ -159,6 +158,10 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
     Guitar::marker(890,285);
     Guitar::marker(936,285);
 
+    this->size_range(1020,300,0,0,0,0,1);
+    this->resizable(this);
+    
+    
     mHandle = 0;
     char portname[64];
 
