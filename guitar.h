@@ -59,8 +59,6 @@ extern uint note_array[6][25];
 extern bool bReset;
 extern bool bcontrol;
 extern uint Guitar_String_Param;
-extern uint fret_Number_Param;
-extern uint occur_Param;
 extern int octave;
 extern uint occurrence;
 extern uint guitar_type;
@@ -69,10 +67,8 @@ class Guitar:public Fl_Double_Window
 {
 private:
 
-    Fl_Button *fret_Off_On[26];
     Fl_Button *gtString[7];
     Fl_Button *fret[151];
-    Fl_Button *occur_Array[7];
 
     struct pollfd *mPollFds;
     int mPollMax, in_port, out_port;
@@ -82,6 +78,8 @@ private:
     static void control_callback(Fl_Button *b);
 
     snd_seq_t* mHandle; // handle and client for system notification events
+    
+    bool m_have_string_toggle;
 
 public:
     Guitar();
@@ -105,13 +103,14 @@ public:
 
     void stringToggle(int gString);
 
-    void fret_On_Off(int fret_Number);
-
-    void occur_Number(uint number);
-
     void fretToggle(uint note,bool on_off);
+    void toggle_fret(int location, bool on_off);
 
     void reset_all_controls(void);
+    
+    int get_fret_center_x(uint x, uint h);
+    int get_fret_center_y(uint y, uint w);
+    
 
 };
 

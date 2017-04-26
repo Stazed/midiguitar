@@ -11,7 +11,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
 {
 
     {
-        Fl_Spinner* o = new Fl_Spinner(420, 25, 40, 25, "Octave");
+        Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Octave");
         o->minimum(-3);
         o->maximum(3);
         o->value(octave);
@@ -19,49 +19,29 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         o->callback((Fl_Callback*) spin_callback);
     } // Fl_Spinner* o
     {
-        Fl_Button* o = new Fl_Button(500, 15, 70, 45, "Reset");
+        Fl_Button* o = new Fl_Button(60, 15, 70, 45, "Reset");
         o->color((Fl_Color)2);
         o->selection_color((Fl_Color)135);
         o->callback((Fl_Callback*) reset_callback);
     } // Fl_Button* o
     {
-        Fl_Button* o = new Fl_Button(700, 15, 70, 45, "Control\n On/Off");
+        Fl_Button* o = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
         o->type(1);
         o->color(FL_GREEN);
         o->selection_color(FL_FOREGROUND_COLOR);
         o->callback((Fl_Callback*) control_callback);
     } //
 
-    {
-        Fl_Text_Display* o = new Fl_Text_Display(210, 15, 0, 0, "Occurrence");
-        o->box(FL_UP_FRAME);
-        o->labelfont(9);
-        o->labelsize(10);
-    }
-    int x = 140;
-    for(int i = 0; i < 6; i++) // Occurrence buttons
-    {
-        Fl_Button* o = new Fl_Button(x, 40, 15, 15);
-        o->box(FL_ROUND_UP_BOX);
-        o->color(FL_BLUE);
-        o->copy_label(SSTR( i + 1 ).c_str());
-        o->selection_color(FL_BLACK);
-        o->align(Fl_Align(FL_ALIGN_TOP));
-        occur_Array[i]= o;
-        x+=25;
-    }
-
     int n = 0;
 
     {
         Fl_Button* b = new Fl_Button(60,80,15,15);    // first OPEN string position 
-        b->box(FL_ROUND_UP_BOX);
+        b->box(FL_NO_BOX);
         b->labelsize(9);
         b->copy_label(SSTR( n ).c_str()); // position 0
         b->color(FL_GREEN);
         b->color2(FL_BLACK);
-        b->align(Fl_Align(FL_ALIGN_TOP));
-        fret_Off_On[n]=b;
+        //b->align(Fl_Align(FL_ALIGN_TOP));
         n++;
     }
     for(int x=0; x<24; x++) // the numbered fret positions & round buttons
@@ -71,13 +51,12 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         float X = distance1 +((distance2 - distance1)/2);
 
         Fl_Button* b = new Fl_Button((X*60.4)+90,80,15,15);
-        b->box(FL_ROUND_UP_BOX);
+        b->box(FL_NO_BOX);
         b->labelsize(9);
         b->copy_label(SSTR( n ).c_str()); // n = 1 to 24
         b->color(FL_GREEN);
         b->color2(FL_BLACK);
-        b->align(Fl_Align(FL_ALIGN_TOP));
-        fret_Off_On[n]=b;
+        //b->align(Fl_Align(FL_ALIGN_TOP));
         n++;
     }
 
@@ -158,7 +137,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
     Guitar::marker(890,285);
     Guitar::marker(936,285);
 
-    this->size_range(1020,300,0,0,0,0,1);
+    this->size_range(1020,300,0,0,0,0,1); // sets minimum & the 1 = scalable
     this->resizable(this);
     
     
@@ -195,6 +174,8 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
     mPollFds = (struct pollfd *) calloc(mPollMax, sizeof(struct pollfd));
 
     snd_seq_nonblock(mHandle, 1);
+    
+    m_have_string_toggle = true; // FIXME
     //ctor
 }
 
@@ -220,15 +201,10 @@ void Guitar::marker(int x,int y)
 
 void Guitar::reset_all_controls()
 {
-    for(int i=0; i < 25; i++)
-        fret_Off_On[i]->value(0);
     for(int i=0; i < 6; i++)
         gtString[i]->value(0);
     for(int i=0; i < 127; i++)
         fretToggle(i,false);
-
-    occur_Number(0);
-//    occurrence = 0;
 
     bReset = false;
 }
@@ -250,17 +226,10 @@ void Guitar::Timeout(void)
             if(ev->type == SND_SEQ_EVENT_CONTROLLER && ev->data.control.param == Guitar_String_Param && bcontrol == true)
             {
                 if(ev->data.control.value >=0 && ev->data.control.value <=5) // must do or it gets sent to random key pointer
+                {
+                    m_have_string_toggle = true;
                     stringToggle(ev->data.control.value);
-            }
-            if(ev->type == SND_SEQ_EVENT_CONTROLLER && ev->data.control.param == fret_Number_Param  && bcontrol == true)
-            {
-                if(ev->data.control.value >=0 && ev->data.control.value <=24) // must do or it gets sent to random key pointer
-                    fret_On_Off(ev->data.control.value);
-            }
-            if(ev->type == SND_SEQ_EVENT_CONTROLLER && ev->data.control.param == occur_Param  && bcontrol == true)
-            {
-                if(ev->data.control.value >=0 && ev->data.control.value <=6) // must do or it gets sent to random key pointer
-                    occur_Number(ev->data.control.value);
+                }
             }
 
             snd_seq_ev_set_subs(ev);
@@ -293,36 +262,6 @@ void Guitar::stringToggle(int gString)
         gtString[gString]->value(1);
 }
 
-void Guitar::fret_On_Off(int fret_Number)
-{
-    if(fret_Off_On[fret_Number]->value()==1)
-        fret_Off_On[fret_Number]->value(0);
-    else
-        fret_Off_On[fret_Number]->value(1);
-}
-
-void Guitar::occur_Number(uint number)
-{
-     // array == 0 to 5 representing number 1 to 6
-     // number 0 is all on 0 to 5
-
-     occurrence = number;
-
-     for(uint i = 0; i < 6; i++)
-     {
-         if(number == 0) // then turn on all notes
-         {
-             occur_Array[i]->value(0);
-         }
-         else if(i == (occurrence -1)) // then turn on the one note offset by array 0 = 1
-         {
-             occur_Array[i]->value(0);
-         }
-         else    // turn off everything else
-             occur_Array[i]->value(1);
-     }
- }
-
 void Guitar::fretToggle(uint note,bool on_off)
 {
      // guitar grid is 0 - 150
@@ -335,8 +274,6 @@ void Guitar::fretToggle(uint note,bool on_off)
      // don't trigger last note unless occur_count is > 1
 
 
-     static uint occur_count = 1;
-
      for(int i=0; i<6; i++)
      {
          for(int j=0; j<25; j++)
@@ -344,42 +281,44 @@ void Guitar::fretToggle(uint note,bool on_off)
              static int I,J;
              if((note + (octave * 12)) == note_array[i][j]) // did the note match the grid?
              {
-                 I = i;
-                 J = j;
-                 if(occurrence == 0 || bReset)
-                 {
-                     if(gtString[I]->value() == 0)   // if the string is on and...
-                     {
-                         if(fret_Off_On[J]->value() == 0) // if the fret is on then play it
-                             fret[(I*25) +J]->value(on_off); // convert from 2d struct array to 1d button array
-                     }
-                     occur_count = 1;
-                 }
-                 else if(occur_count == occurrence ) // if match of occurrence
-                 {
-                     if(gtString[I]->value() == 0)   // if the string is on and...
-                     {
-                         if(fret_Off_On[J]->value() == 0) // if the fret is on then play it
-                             fret[(I*25) +J]->value(on_off); // convert from 2d struct array to 1d button array
-                     }
-                     occur_count = 1;    // we found it so reset counter and return for next event
-                     return;
-                 }
-                 occur_count++;
-             }
-
-             if(i == 5 && j == 24 && occur_count > 1) // only if occur_count >1 because that means NOT out of range
-             {
-                 if(gtString[I]->value() == 0)   // if the string is on and...
-                 {
-                     if(fret_Off_On[J]->value() == 0) // if the fret is on then play it
-                         fret[(I*25) +J]->value(on_off); // convert from 2d struct array to 1d button array
-                 }
+                // save the location
+                I = i;
+                J = j;
+                
+                // do we have a starting string location
+                //if(m_have_string_toggle)
+                //{
+                    if(gtString[I]->value() == 0)   // if the string is on and...
+                    {
+                        // get the  x/y center and save it
+                        // on next note compare all occurrences of the new note x/y to the previous saved note
+                        // select the note with the lowest x-x + y-y value & play it & save it
+                        // goto the top
+                        
+                        toggle_fret((I*25) +J,on_off);
+                       
+                //        stringToggle(I);              // shut off string after we get it
+                //        m_have_string_toggle = false; // shut off flag for string toggle
+                    }
+                //}
              }
          }
      }
-     occur_count = 1;
  }
+
+void Guitar::toggle_fret(int location, bool on_off)
+{
+    fret[location]->value(on_off); // convert from 2d struct array to 1d button array
+    
+    if(on_off)
+        fret[location]->copy_label("On");
+    else
+         fret[location]->copy_label("");
+    
+    printf("center x=%d: center y=%d\n",get_fret_center_x(fret[location]->x(),fret[location]->h()),
+        get_fret_center_y(fret[location]->y(),fret[location]->w()));
+     //fret[(I*25) +J]->copy_label(SSTR( n ).c_str()); // position 0
+}
 
 void Guitar::spin_callback(Fl_Spinner* b, void*)
 {
@@ -403,3 +342,12 @@ void Guitar::control_callback(Fl_Button *b)
     }
 }
 
+int Guitar::get_fret_center_x(uint x, uint h)
+{
+    return x + (h *.5);
+}
+
+int Guitar::get_fret_center_y(uint y, uint w)
+{
+    return y + (w * .5);
+}
