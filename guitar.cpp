@@ -2,10 +2,6 @@
 #include <FL/fl_ask.H>
 #include <math.h>
 
-bool bReset = false;
-bool bcontrol = true;
-uint occurrence = 0;
-
 
 Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
 {
@@ -14,22 +10,22 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Octave");
         o->minimum(-3);
         o->maximum(3);
-        o->value(octave);
+        o->value(m_octave);
         o->align(Fl_Align(FL_ALIGN_TOP));
-        o->callback((Fl_Callback*) spin_callback);
+        o->callback((Fl_Callback*)spin_callback,this);
     } // Fl_Spinner* o
     {
         Fl_Button* o = new Fl_Button(60, 15, 70, 45, "Reset");
         o->color((Fl_Color)2);
         o->selection_color((Fl_Color)135);
-        o->callback((Fl_Callback*) reset_callback);
+        o->callback((Fl_Callback*) reset_callback,this);
     } // Fl_Button* o
     {
         Fl_Button* o = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
         o->type(1);
         o->color(FL_GREEN);
         o->selection_color(FL_FOREGROUND_COLOR);
-        o->callback((Fl_Callback*) control_callback);
+        o->callback((Fl_Callback*) control_callback,this);
     } //
 
     int n = 0;
@@ -89,7 +85,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
     char note_Reverse[] = "EADGBE";
 //    uint note_array[6][25];
 
-    if(guitar_type == 1 || guitar_type == 3)
+    if(global_guitar_type == 1 || global_guitar_type == 3)
     {
         for(int i = 0; i < 6; i++)
             note_string[i] = note_Reverse[i];
@@ -98,7 +94,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         {
             for(int j=0; j<25; j++)
             {
-                note_array[i][j] = guitarReverseNote[i][j];
+                m_note_array[i][j] = guitarReverseNote[i][j];
             }
         }
     }
@@ -108,7 +104,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         {
             for(int j=0; j<25; j++)
             {
-                note_array[i][j] = guitarMidiNote[i][j];
+                m_note_array[i][j] = guitarMidiNote[i][j];
             }
         }
     }
@@ -176,6 +172,8 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
     snd_seq_nonblock(mHandle, 1);
     
     m_have_string_toggle = true; // FIXME
+    m_bReset = false;
+    m_bcontrol = true;
     //ctor
 }
 
@@ -202,16 +200,17 @@ void Guitar::marker(int x,int y)
 void Guitar::reset_all_controls()
 {
     for(int i=0; i < 6; i++)
-        gtString[i]->value(0);
+        gtString[i]->value(1);
     for(int i=0; i < 127; i++)
         fretToggle(i,false);
 
-    bReset = false;
+    m_have_string_toggle = false;
+    m_bReset = false;
 }
 
 void Guitar::Timeout(void)
 {
-    if(bReset)
+    if(m_bReset)
         Guitar::reset_all_controls();
 
     snd_seq_event_t *ev;
@@ -223,7 +222,7 @@ void Guitar::Timeout(void)
         {
             snd_seq_free_event(ev);
 
-            if(ev->type == SND_SEQ_EVENT_CONTROLLER && ev->data.control.param == Guitar_String_Param && bcontrol == true)
+            if(ev->type == SND_SEQ_EVENT_CONTROLLER && ev->data.control.param == m_guitar_string_param && m_bcontrol == true)
             {
                 if(ev->data.control.value >=0 && ev->data.control.value <=5) // must do or it gets sent to random key pointer
                 {
@@ -274,20 +273,24 @@ void Guitar::fretToggle(uint note,bool on_off)
      // don't trigger last note unless occur_count is > 1
 
 
-     for(int i=0; i<6; i++)
+     for(int i=0; i<6; i++) // strings
      {
-         for(int j=0; j<25; j++)
+         for(int j=0; j<25; j++)  // frets
          {
              static int I,J;
-             if((note + (octave * 12)) == note_array[i][j]) // did the note match the grid?
+             if((note + (m_octave * 12)) == m_note_array[i][j]) // did the note match the grid?
              {
                 // save the location
                 I = i;
                 J = j;
                 
                 // do we have a starting string location
-                //if(m_have_string_toggle)
-                //{
+                if(!m_have_string_toggle) // no so send all notes found - default
+                {
+                    toggle_fret((I*25) +J,on_off);
+                }
+                else // user supplied CC starting location
+                {
                     if(gtString[I]->value() == 0)   // if the string is on and...
                     {
                         // get the  x/y center and save it
@@ -297,10 +300,10 @@ void Guitar::fretToggle(uint note,bool on_off)
                         
                         toggle_fret((I*25) +J,on_off);
                        
-                //        stringToggle(I);              // shut off string after we get it
-                //        m_have_string_toggle = false; // shut off flag for string toggle
+                        stringToggle(I);              // shut off string after we get it
+                        m_have_string_toggle = false; // shut off flag for string toggle
                     }
-                //}
+                }
              }
          }
      }
@@ -320,26 +323,41 @@ void Guitar::toggle_fret(int location, bool on_off)
      //fret[(I*25) +J]->copy_label(SSTR( n ).c_str()); // position 0
 }
 
-void Guitar::spin_callback(Fl_Spinner* b, void*)
+void Guitar::cb_spin_callback(Fl_Spinner* o)
 {
-    octave = b->value();
+    m_octave = o->value();
 }
 
-void Guitar::reset_callback(Fl_Button*, void*)
+void Guitar::spin_callback(Fl_Spinner* o, void* data)
 {
-    bReset = true;
+    ((Guitar*)data)->cb_spin_callback(o);
 }
 
-void Guitar::control_callback(Fl_Button *b)
+void Guitar::cb_reset_callback(Fl_Button* o)
+{
+    m_bReset = true;
+}
+
+void Guitar::reset_callback(Fl_Button* o, void* data)
+{
+    ((Guitar*)data)->cb_reset_callback(o);
+}
+
+void Guitar::cb_control_callback(Fl_Button *b)
 {
     if(b->value() == 1)
     {
-        bcontrol = false;
+        m_bcontrol = false;
     }
     else
     {
-        bcontrol = true;
+        m_bcontrol = true;
     }
+}
+
+void Guitar::control_callback(Fl_Button *b, void* data)
+{
+    ((Guitar*)data)->cb_control_callback(b);
 }
 
 int Guitar::get_fret_center_x(uint x, uint h)

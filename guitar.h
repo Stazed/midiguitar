@@ -55,13 +55,7 @@ uint const guitarReverseNote[6][25]=
     {64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88}, // E high
 };
 
-extern uint note_array[6][25];
-extern bool bReset;
-extern bool bcontrol;
-extern uint Guitar_String_Param;
-extern int octave;
-extern uint occurrence;
-extern uint guitar_type;
+extern uint global_guitar_type;
 
 class Guitar:public Fl_Double_Window
 {
@@ -73,13 +67,23 @@ private:
     struct pollfd *mPollFds;
     int mPollMax, in_port, out_port;
 
+    void cb_spin_callback(Fl_Spinner*);
     static void spin_callback(Fl_Spinner*, void*);
+
+    void cb_reset_callback(Fl_Button*);
     static void reset_callback(Fl_Button*, void*);
-    static void control_callback(Fl_Button *b);
+    
+    void cb_control_callback(Fl_Button*);
+    static void control_callback(Fl_Button*, void*);
 
     snd_seq_t* mHandle; // handle and client for system notification events
     
     bool m_have_string_toggle;
+    uint m_note_array[6][25];
+    bool m_bReset;
+    bool m_bcontrol;
+    uint m_guitar_string_param;
+    int  m_octave;
 
 public:
     Guitar();
