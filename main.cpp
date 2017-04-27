@@ -4,16 +4,15 @@ Guitar* MidiGuitar = 0;
 
 uint Guitar_String_Param = 0;
 int octave = 0;
-uint global_guitar_type = 1;
 uint note_array[6][25];
 
 int main(int argc, char **argv)
 {
     Guitar_String_Param = 16; // TODO argv
     octave = 0; // TODO argv
-    global_guitar_type = 1; // TODO argv  types 0 = R/h normal, 1 = R/h mirror, 2 = L/h normal, 3 = L/h mirror
+    uint guitar_type = 1; // TODO argv  types 0 = R/h normal, 1 = R/h mirror, 2 = L/h normal, 3 = L/h mirror
 
-    MidiGuitar = new Guitar;
+    MidiGuitar = new Guitar(guitar_type);
     
     MidiGuitar->show();
 

@@ -55,7 +55,8 @@ uint const guitarReverseNote[6][25]=
     {64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88}, // E high
 };
 
-extern uint global_guitar_type;
+const uint c_global_pixel_scale = 61;
+const uint c_global_fret_height = 20;
 
 class Guitar:public Fl_Double_Window
 {
@@ -78,15 +79,16 @@ private:
 
     snd_seq_t* mHandle; // handle and client for system notification events
     
-    bool m_have_string_toggle;
     uint m_note_array[6][25];
+    bool m_have_string_toggle;
     bool m_bReset;
     bool m_bcontrol;
+    uint m_guitar_type;
     uint m_guitar_string_param;
     int  m_octave;
 
 public:
-    Guitar();
+    Guitar(uint a_type);
     virtual ~Guitar();
 
     float fret_distance(int num_fret);

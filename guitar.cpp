@@ -3,9 +3,10 @@
 #include <math.h>
 
 
-Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
+Guitar::Guitar(uint a_type):
+    Fl_Double_Window(1020, 280,"Midi Guitar Player"),
+    m_guitar_type(a_type)    
 {
-
     {
         Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Octave");
         o->minimum(-3);
@@ -40,7 +41,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         //b->align(Fl_Align(FL_ALIGN_TOP));
         n++;
     }
-    for(int x=0; x<24; x++) // the numbered fret positions & round buttons
+    for(int x=0; x<24; x++) // the numbered fret positions & round buttons(now invisible)
     {
         float distance1 = Guitar::fret_distance(x);
         float distance2 = Guitar::fret_distance(x+1);
@@ -60,7 +61,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
 
     for (int y=0; y<6; y++)
     {
-        Fl_Button* b = new Fl_Button(45,(y+1)*25+(y>=6?12*40:75),45,25,"Open");
+        Fl_Button* b = new Fl_Button(45,(y+1)*c_global_fret_height+(y>=6?12*40:75),45,c_global_fret_height,"Open");
         b->color(FL_YELLOW);
         b->color2(FL_RED);
         fret[n]=b;
@@ -71,7 +72,7 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
             float distance2 = Guitar::fret_distance(x+1);
 
             float fret_W = distance2 - distance1;
-            Fl_Button* b = new Fl_Button((distance1*61)+90,(y+1)*25+(y>=6?12*40:75),fret_W*61,25);
+            Fl_Button* b = new Fl_Button((distance1*c_global_pixel_scale)+90,(y+1)*c_global_fret_height+(y>=6?12*40:75),fret_W*c_global_pixel_scale,c_global_fret_height);
             b->color((Fl_Color)18);
             b->color2(FL_RED);
             fret[n]=b;
@@ -79,13 +80,13 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         }
     }
 
-    int y = 106;
+    int y = 98;
 
     char note_string[] = "EBGDAE";
     char note_Reverse[] = "EADGBE";
 //    uint note_array[6][25];
 
-    if(global_guitar_type == 1 || global_guitar_type == 3)
+    if(m_guitar_type == 1 || m_guitar_type == 3)
     {
         for(int i = 0; i < 6; i++)
             note_string[i] = note_Reverse[i];
@@ -120,20 +121,20 @@ Guitar::Guitar():Fl_Double_Window(1020, 300,"Midi Guitar Player")
         o->selection_color(FL_BLACK);
         o->align(Fl_Align(FL_ALIGN_LEFT));
         gtString[i]= o;
-        y += 25;
+        y += c_global_fret_height;
     }
-    Guitar::marker(255,285);
-    Guitar::marker(367,285);
-    Guitar::marker(470,285);
-    Guitar::marker(564,285);
-    Guitar::marker(683,285);
-    Guitar::marker(683,305);
-    Guitar::marker(783,285);
-    Guitar::marker(839,285);
-    Guitar::marker(890,285);
-    Guitar::marker(936,285);
+    Guitar::marker(255,250);
+    Guitar::marker(367,250);
+    Guitar::marker(470,250);
+    Guitar::marker(564,250);
+    Guitar::marker(683,250);
+    Guitar::marker(683,270);
+    Guitar::marker(783,250);
+    Guitar::marker(839,250);
+    Guitar::marker(890,250);
+    Guitar::marker(936,250);
 
-    this->size_range(1020,300,0,0,0,0,1); // sets minimum & the 1 = scalable
+    this->size_range(1020,280,0,0,0,0,1); // sets minimum & the 1 = scalable
     this->resizable(this);
     
     
