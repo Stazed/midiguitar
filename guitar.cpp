@@ -172,9 +172,14 @@ Guitar::Guitar(uint a_type):
 
     snd_seq_nonblock(mHandle, 1);
     
-    m_have_string_toggle = true; // FIXME
+    m_have_string_toggle = false;
     m_bReset = false;
     m_bcontrol = true;
+    m_last_fret = false;
+    m_last_used_fret = -1;
+    
+    for(int i = 0; i< 7; i++)
+        storeFretLocation[i] = -1;
     //ctor
 }
 
@@ -251,7 +256,7 @@ void Guitar::Timeout(void)
     }
     while (ev);
 
-    Fl::add_timeout(0.001,Guitar::TimeoutStatic,this);
+    Fl::add_timeout(0.001,Guitar::TimeoutStatic,this); // FIXME check 0.001 value
 }
 
 void Guitar::stringToggle(int gString)
@@ -272,6 +277,8 @@ void Guitar::fretToggle(uint note,bool on_off)
      // if no match then continue searching until match or end of array
      // if end of array(i == 5, j == 24)  then trigger the last note in static
      // don't trigger last note unless occur_count is > 1
+    
+    bool found_fret = false;
 
 
      for(int i=0; i<6; i++) // strings
@@ -281,33 +288,53 @@ void Guitar::fretToggle(uint note,bool on_off)
              static int I,J;
              if((note + (m_octave * 12)) == m_note_array[i][j]) // did the note match the grid?
              {
+                found_fret = on_off;
                 // save the location
                 I = i;
                 J = j;
                 
-                // do we have a starting string location
-                if(!m_have_string_toggle) // no so send all notes found - default
+                // do we want to calculate the fret location - or is it note on
+                if(!m_bcontrol || !on_off) // no so send all notes found - default
                 {
                     toggle_fret((I*25) +J,on_off);
+                    
+                    if(I >= 6 && J >= 24) // when we are done
+                        return;
                 }
-                else // user supplied CC starting location
+                else // user supplied CC starting location string or use first found
                 {
-                    if(gtString[I]->value() == 0)   // if the string is on and...
+                    if(m_have_string_toggle) // user supplied CC for string
                     {
-                        // get the  x/y center and save it
-                        // on next note compare all occurrences of the new note x/y to the previous saved note
-                        // select the note with the lowest x-x + y-y value & play it & save it
-                        // goto the top
-                        
+                        if(gtString[I]->value() == 0)   // if the string is on and...
+                        {
+                            toggle_fret((I*25) +J,on_off);
+
+                            stringToggle(I);              // shut off string after we get it
+                            m_have_string_toggle = false; // shut off flag for string toggle
+                            m_last_used_fret = (I*25) +J; // save the fret location
+                            m_last_fret = true; // set this so we know to use it next time
+                            return; // found it so leave
+                        }
+                    }
+                    else if(m_last_fret) // we have previous fret so use it for calculation
+                    {
+                        storeFretLocation[I] = (I*25) +J;
+                    }
+                    else // we don't have a CC or last fret so this would be the first found
+                         // so use it by default
+                    {
                         toggle_fret((I*25) +J,on_off);
-                       
-                        stringToggle(I);              // shut off string after we get it
-                        m_have_string_toggle = false; // shut off flag for string toggle
+                        m_last_used_fret = (I*25) +J; // save the fret location
+                        m_last_fret = true; // set this so we know to use it
+                        return;
                     }
                 }
              }
          }
      }
+     
+    if(found_fret && m_last_fret)
+        toggle_fret(calculate_closest_fret(),on_off);
  }
 
 void Guitar::toggle_fret(int location, bool on_off)
@@ -319,8 +346,8 @@ void Guitar::toggle_fret(int location, bool on_off)
     else
          fret[location]->copy_label("");
     
-    printf("center x=%d: center y=%d\n",get_fret_center_x(fret[location]->x(),fret[location]->h()),
-        get_fret_center_y(fret[location]->y(),fret[location]->w()));
+   // printf("center x=%d: center y=%d\n",get_fret_center(fret[location]->x(),fret[location]->h()),
+   //     get_fret_center(fret[location]->y(),fret[location]->w()));
      //fret[(I*25) +J]->copy_label(SSTR( n ).c_str()); // position 0
 }
 
@@ -361,12 +388,59 @@ void Guitar::control_callback(Fl_Button *b, void* data)
     ((Guitar*)data)->cb_control_callback(b);
 }
 
-int Guitar::get_fret_center_x(uint x, uint h)
+int Guitar::get_fret_center(uint x_or_y, uint h_or_w)
 {
-    return x + (h *.5);
+    return x_or_y + (h_or_w *.5);
 }
 
-int Guitar::get_fret_center_y(uint y, uint w)
+int Guitar::calculate_closest_fret()
 {
-    return y + (w * .5);
+    int last_X = get_fret_center(fret[m_last_used_fret]->x(),fret[m_last_used_fret]->h());
+    int last_Y = get_fret_center(fret[m_last_used_fret]->y(),fret[m_last_used_fret]->w());
+    
+    int total_XY = last_X + last_Y;
+    
+    int closest_fret = -1;
+    int last_diff = -1;
+    
+    printf("Got Here!\n");
+    for(int i = 0; i < 6; i++)
+    {
+        if(storeFretLocation[i] == -1)
+            break;
+        if(i == 0)
+            closest_fret = storeFretLocation[i];
+        
+        int X = get_fret_center(fret[storeFretLocation[i]]->x(),fret[storeFretLocation[i]]->h());
+        int Y = get_fret_center(fret[storeFretLocation[i]]->y(),fret[storeFretLocation[i]]->w());
+        int tot_XY = X + Y;
+        
+        int current_diff = abs(total_XY - tot_XY);
+        
+        if(i == 0)
+        {
+            last_diff = current_diff;
+            closest_fret = storeFretLocation[i];
+            continue;
+        }
+        
+        last_diff = (last_diff < current_diff?last_diff:current_diff);
+        closest_fret = (last_diff < current_diff?closest_fret:storeFretLocation[i]);
+        //(y>=6?12*40:75)
+        
+    }
+    
+    for(int i = 0; i< 7; i++)
+        storeFretLocation[i] = -1;
+    
+    m_last_fret = true;
+    m_last_used_fret = closest_fret;
+    
+    printf("closest_fret %d\n",closest_fret);
+    
+    return closest_fret;
+    
+    //storeFretLocation[i]
+    //printf("center x=%d: center y=%d\n",get_fret_center(fret[location]->x(),fret[location]->h()),
+    //    get_fret_center(fret[location]->y(),fret[location]->w()));
 }

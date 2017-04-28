@@ -55,6 +55,8 @@ uint const guitarReverseNote[6][25]=
     {64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88}, // E high
 };
 
+int storeFretLocation[7];
+
 const uint c_global_pixel_scale = 61;
 const uint c_global_fret_height = 20;
 
@@ -81,11 +83,13 @@ private:
     
     uint m_note_array[6][25];
     bool m_have_string_toggle;
+    bool m_last_fret;
     bool m_bReset;
     bool m_bcontrol;
     uint m_guitar_type;
     uint m_guitar_string_param;
     int  m_octave;
+    int  m_last_used_fret;
 
 public:
     Guitar(uint a_type);
@@ -114,9 +118,8 @@ public:
 
     void reset_all_controls(void);
     
-    int get_fret_center_x(uint x, uint h);
-    int get_fret_center_y(uint y, uint w);
-    
+    int get_fret_center(uint x_or_y, uint h_or_w);
+    int calculate_closest_fret();
 
 };
 
