@@ -84,18 +84,17 @@ Guitar::Guitar(uint a_type):
 
     char note_string[] = "EBGDAE";
     char note_Reverse[] = "EADGBE";
-//    uint note_array[6][25];
 
     if(m_guitar_type == 1 || m_guitar_type == 3)
     {
         for(int i = 0; i < 6; i++)
             note_string[i] = note_Reverse[i];
 
-        for(int i=0; i<6; i++)
+        for(int i=5; i>=0; i--)
         {
             for(int j=0; j<25; j++)
             {
-                m_note_array[i][j] = guitarReverseNote[i][j];
+                m_note_array[i][j] = guitarMidiNote[i][j];
             }
         }
     }
@@ -339,19 +338,28 @@ void Guitar::fretToggle(uint note,bool on_off)
 
 void Guitar::toggle_fret(int location, bool on_off)
 {
-    //printf("location %d\n",location);
-    fret[location]->value(on_off); // convert from 2d struct array to 1d button array
+    int string = location / 25;
+    int nfret = location % 25;
+    
+    if(m_guitar_type == 1)
+        string = (5 - string) * 25;
+    else
+        string *= 25;
+    
+    fret[string + nfret]->value(on_off); // convert from 2d struct array to 1d button array
     
     if(on_off)
     {
-        if(m_guitar_type == 0)
-            fret[location]->copy_label(c_key_table_text[location]);
-        
-        if(m_guitar_type == 1)
-            fret[location]->copy_label(c_key_reverse_table_text[location]);
+        fret[string + nfret]->copy_label(c_key_table_text[location]);
     }
     else
-         fret[location]->copy_label("");
+    {
+        std::string label = "";
+        if(nfret == 0)
+            label = "Open";
+        
+        fret[string + nfret]->copy_label(label.c_str());
+    }
 }
 
 void Guitar::cb_spin_callback(Fl_Spinner* o)
