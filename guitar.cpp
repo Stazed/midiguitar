@@ -343,7 +343,13 @@ void Guitar::toggle_fret(int location, bool on_off)
     fret[location]->value(on_off); // convert from 2d struct array to 1d button array
     
     if(on_off)
-        fret[location]->copy_label("On");
+    {
+        if(m_guitar_type == 0)
+            fret[location]->copy_label(c_key_table_text[location]);
+        
+        if(m_guitar_type == 1)
+            fret[location]->copy_label(c_key_reverse_table_text[location]);
+    }
     else
          fret[location]->copy_label("");
 }
