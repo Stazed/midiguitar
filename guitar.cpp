@@ -122,6 +122,26 @@ Guitar::Guitar(uint a_type):
         gtString[i]= o;
         y += c_global_fret_height;
     }
+    
+    y=100;
+    for(int i = 0; i < 6; i++)
+    {
+        Fl_Button* o = new Fl_Button(12, y, 15, 15);
+        o->box(FL_NO_BOX);
+        o->labelsize(9);
+        
+        int label = i + 1;
+        if(m_guitar_type == 1 || m_guitar_type == 3)
+        {
+            label = 7 - label;
+        }
+        
+        o->copy_label(SSTR( label ).c_str()); // i = 1 to 6
+        o->selection_color(FL_BLACK);
+        o->align(Fl_Align(FL_ALIGN_LEFT));
+        y += c_global_fret_height;
+    }
+    
     Guitar::marker(255,250);
     Guitar::marker(367,250);
     Guitar::marker(470,250);
@@ -233,11 +253,11 @@ void Guitar::Timeout(void)
 
             if(ev->type == SND_SEQ_EVENT_CONTROLLER && ev->data.control.param == m_guitar_string_param && m_bcontrol == true)
             {
-                if(ev->data.control.value >=0 && ev->data.control.value <=5) // must do or it gets sent to random key pointer
+                if(ev->data.control.value >=1 && ev->data.control.value <=6) // must do or it gets sent to random key pointer
                 {
                     m_have_string_toggle = true;
                     m_last_fret = false;
-                    stringToggle(ev->data.control.value);
+                    stringToggle(ev->data.control.value -1);  // we use 0 to 5, but user is 1 to 6
                 }
             }
 
@@ -316,6 +336,7 @@ void Guitar::fretToggle(uint note,bool on_off)
                     }
                     else if(m_last_fret) // we have previous fret so use it for calculation
                     {
+                        // after all locations are found then falls through to end which calls calculate_closest_fret()
                         storeFretLocation[I] = (I*25) +J;
                        // printf("init store Fret %d\n",storeFretLocation[I]);
                     }
@@ -331,7 +352,7 @@ void Guitar::fretToggle(uint note,bool on_off)
              }
          }
      }
-     
+    // this gets triggered only when we use the storeFretLocation[] 
     if(found_fret && m_last_fret)
         toggle_fret(calculate_closest_fret(),on_off);
  }
@@ -346,13 +367,13 @@ void Guitar::toggle_fret(int location, bool on_off)
     else
         string *= 25;
     
-    fret[string + nfret]->value(on_off); // convert from 2d struct array to 1d button array
+    fret[string + nfret]->value(on_off);
     
-    if(on_off)
+    if(on_off) // true is note ON, so display note text
     {
         fret[string + nfret]->copy_label(c_key_table_text[location]);
     }
-    else
+    else // clear note text
     {
         std::string label = "";
         if(nfret == 0)
@@ -445,7 +466,7 @@ int Guitar::calculate_closest_fret()
     }
     
     for(int i = 0; i< 6; i++)
-        storeFretLocation[i] = -1;
+        storeFretLocation[i] = -1; // clear the array
     
     m_last_fret = true;
     m_last_used_fret = closest_fret;
