@@ -3,9 +3,11 @@
 #include <math.h>
 
 
-Guitar::Guitar(uint a_type):
+Guitar::Guitar(uint a_type, uint a_CC, std::string name):
     Fl_Double_Window(1020, 280,"Midi Guitar Player"),
-    m_guitar_type(a_type)    
+    m_guitar_type(a_type),
+    m_guitar_string_param(a_CC),
+    m_client_name(name)
 {
     {
         Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Octave");
@@ -166,9 +168,10 @@ Guitar::Guitar(uint a_type):
         exit(-1);
     }
 
-    snd_seq_set_client_name(mHandle,"MIDI Guitar Player");
-
-    sprintf(portname, "MIDI Guitar Player IN");
+    snd_seq_set_client_name(mHandle,m_client_name.c_str());
+    
+    std::string temp_name = m_client_name + " IN";
+    sprintf(portname, "%s",temp_name.c_str());
     if ((in_port = snd_seq_create_simple_port(mHandle, portname,
                    SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
                    SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
@@ -177,7 +180,8 @@ Guitar::Guitar(uint a_type):
         exit(-1);
     }
 
-    sprintf(portname, "MIDI Guitar Player OUT");
+    temp_name = m_client_name + " OUT";
+    sprintf(portname, "%s",temp_name.c_str());
     if ((out_port = snd_seq_create_simple_port(mHandle, portname,
                     SND_SEQ_PORT_CAP_READ|SND_SEQ_PORT_CAP_SUBS_READ,
                     SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
@@ -192,7 +196,6 @@ Guitar::Guitar(uint a_type):
     snd_seq_nonblock(mHandle, 1);
     
     m_have_string_toggle = false;
-    m_guitar_string_param = 16; // FIXME
     m_bReset = false;
     m_bcontrol = true;
     m_last_fret = false;

@@ -104,6 +104,7 @@ private:
     bool m_bReset;
     bool m_bcontrol;
     uint m_guitar_type;
+    std::string m_client_name;
     uint m_guitar_string_param;
     int  m_octave;
     int  m_last_used_fret;
@@ -111,7 +112,7 @@ private:
     int storeFretLocation[7];
 
 public:
-    Guitar(uint a_type);
+    Guitar(uint a_type, uint a_CC, std::string name);
     virtual ~Guitar();
 
     float fret_distance(int num_fret);
