@@ -66,6 +66,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name):
         Fl_Button* b = new Fl_Button(45,(y+1)*c_global_fret_height+(y>=6?12*40:75),45,c_global_fret_height,"Open");
         b->color(FL_YELLOW);
         b->color2(FL_RED);
+        b->callback((Fl_Callback*) fret_callback,this);
         fret[n]=b;
         n++;
         for (int x=0; x<24; x++) // The actual frets
@@ -77,6 +78,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name):
             Fl_Button* b = new Fl_Button((distance1*c_global_pixel_scale)+90,(y+1)*c_global_fret_height+(y>=6?12*40:75),fret_W*c_global_pixel_scale,c_global_fret_height);
             b->color((Fl_Color)18);
             b->color2(FL_RED);
+            b->callback((Fl_Callback*) fret_callback,this);
             fret[n]=b;
             n++;
         }
@@ -286,7 +288,7 @@ void Guitar::Timeout(void)
     }
     while (ev);
 
-    Fl::add_timeout(0.001,Guitar::TimeoutStatic,this); // FIXME check 0.001 value
+    Fl::add_timeout(0.01,Guitar::TimeoutStatic,this);
 }
 
 void Guitar::stringToggle(int gString)
@@ -426,6 +428,28 @@ void Guitar::cb_control_callback(Fl_Button *b)
 void Guitar::control_callback(Fl_Button *b, void* data)
 {
     ((Guitar*)data)->cb_control_callback(b);
+}
+
+void Guitar::cb_fret_callback(Fl_Button* b)
+{
+    for(int i=0; i<150; i++)
+    {
+        if(b == fret[i])
+        {
+            int string = i / 25;
+            int nfret = i % 25;
+    
+            if(m_guitar_type == 1)
+                string = (5 - string);
+            
+            printf("string = %d: fret = %d: note %u\n",string,nfret, m_note_array[string][nfret]);
+        }
+    }
+}
+
+void Guitar::fret_callback(Fl_Button* b, void* data)
+{
+    ((Guitar*)data)->cb_fret_callback(b);
 }
 
 int Guitar::get_fret_center(uint x_or_y, uint h_or_w)

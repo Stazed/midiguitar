@@ -95,6 +95,9 @@ private:
     
     void cb_control_callback(Fl_Button*);
     static void control_callback(Fl_Button*, void*);
+    
+    void cb_fret_callback(Fl_Button*);
+    static void fret_callback(Fl_Button*, void*);
 
     snd_seq_t* mHandle; // handle and client for system notification events
     
