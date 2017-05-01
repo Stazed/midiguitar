@@ -58,6 +58,7 @@ int main(int argc, char **argv)
             {
                 guitar_type = (atoi( optarg ));
             }
+            break;
 
         case 's':
             if(atoi( optarg ) >= 0 && atoi( optarg ) < 128)

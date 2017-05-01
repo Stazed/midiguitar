@@ -260,7 +260,10 @@ void Guitar::Timeout(void)
                 {
                     m_have_string_toggle = true;
                     m_last_fret = false;
-                    stringToggle(ev->data.control.value -1);  // we use 0 to 5, but user is 1 to 6
+                    if(m_guitar_type == 0)
+                        stringToggle(ev->data.control.value -1);  // we use 0 to 5, but user is 1 to 6
+                    else
+                        stringToggle(5-(ev->data.control.value -1));
                 }
             }
 
