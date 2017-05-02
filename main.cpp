@@ -16,7 +16,7 @@ static struct
 
 int main(int argc, char **argv)
 {
-    std::string client_name = "MIDI Guitar Player";
+    std::string client_name = "MIDI Guitar";
     uint guitar_string_param = 16;
     uint guitar_type = 0;
     
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
             printf( "         The default CC value is 16.\n");
             printf( "   -t, --guitar_view_type: types 0 = R/h normal, 1 = R/h mirror\n");
 //                    ", 2 = L/h normal, 3 = L/h mirror\n" );
-            printf( "   -n, --client_name <name>: Set alsa client name: Default = MIDI Guitar Player\n");
+            printf( "   -n, --client_name <name>: Set alsa client name: Default = MIDI Guitar\n");
             printf( "\n\n\n" );
 
             return EXIT_SUCCESS;

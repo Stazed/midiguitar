@@ -66,6 +66,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name):
         Fl_Button* b = new Fl_Button(45,(y+1)*c_global_fret_height+(y>=6?12*40:75),45,c_global_fret_height,"Open");
         b->color(FL_YELLOW);
         b->color2(FL_RED);
+        b->when(FL_WHEN_CHANGED);
         b->callback((Fl_Callback*) fret_callback,this);
         fret[n]=b;
         n++;
@@ -78,6 +79,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name):
             Fl_Button* b = new Fl_Button((distance1*c_global_pixel_scale)+90,(y+1)*c_global_fret_height+(y>=6?12*40:75),fret_W*c_global_pixel_scale,c_global_fret_height);
             b->color((Fl_Color)18);
             b->color2(FL_RED);
+            b->when(FL_WHEN_CHANGED);
             b->callback((Fl_Callback*) fret_callback,this);
             fret[n]=b;
             n++;
@@ -172,8 +174,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name):
 
     snd_seq_set_client_name(mHandle,m_client_name.c_str());
     
-    std::string temp_name = m_client_name + " IN";
-    sprintf(portname, "%s",temp_name.c_str());
+    sprintf(portname, "midi in");
     if ((in_port = snd_seq_create_simple_port(mHandle, portname,
                    SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
                    SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
@@ -182,8 +183,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name):
         exit(-1);
     }
 
-    temp_name = m_client_name + " OUT";
-    sprintf(portname, "%s",temp_name.c_str());
+    //temp_name = m_client_name + " OUT";
+    sprintf(portname, "midi out");
     if ((out_port = snd_seq_create_simple_port(mHandle, portname,
                     SND_SEQ_PORT_CAP_READ|SND_SEQ_PORT_CAP_SUBS_READ,
                     SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
@@ -202,6 +203,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name):
     m_bcontrol = true;
     m_last_fret = false;
     m_last_used_fret = -1;
+    m_midi_channel = 1; // FIXME command line
     
     for(int i = 0; i< 6; i++)
     {   
@@ -269,21 +271,21 @@ void Guitar::Timeout(void)
                 }
             }
 
-            snd_seq_ev_set_subs(ev);
-            snd_seq_ev_set_direct(ev);
-
             if (ev->type == SND_SEQ_EVENT_NOTEON)
                 fretToggle(ev->data.note.note,true);
 
             if ((ev->type == SND_SEQ_EVENT_NOTEOFF))
                 fretToggle(ev->data.note.note,false);
-
+            
+            snd_seq_ev_set_subs(ev);
+            snd_seq_ev_set_direct(ev);
             snd_seq_ev_set_source(ev, out_port);
             snd_seq_event_output_direct(mHandle, ev);
 
             snd_seq_drain_output(mHandle);
 
             snd_seq_free_event(ev);
+            
         }
     }
     while (ev);
@@ -438,13 +440,41 @@ void Guitar::cb_fret_callback(Fl_Button* b)
         {
             int string = i / 25;
             int nfret = i % 25;
+            int text_array = (string * 25) + nfret;
     
             if(m_guitar_type == 1)
+            {
                 string = (5 - string);
+                text_array = (string * 25) + nfret;
+            }
+            snd_seq_ev_clear(&m_ev);
             
-            printf("string = %d: fret = %d: note %u\n",string,nfret, m_note_array[string][nfret]);
+            if(fret[i]->value() == 1)
+            {
+                fret[i]->copy_label(c_key_table_text[text_array]);
+                snd_seq_ev_set_noteon(&m_ev,m_midi_channel,m_note_array[string][nfret],127);
+            }
+            else
+            {
+                std::string label = "";
+                if(nfret == 0)
+                    label = "Open";
+        
+                fret[i]->copy_label(label.c_str());
+                snd_seq_ev_set_noteon(&m_ev,m_midi_channel,m_note_array[string][nfret],0);
+            }
+            
+            //printf("string = %d: fret = %d: note %u\n",string,nfret, m_note_array[string][nfret]);
+
+            snd_seq_ev_set_source(&m_ev, out_port);
+            snd_seq_ev_set_subs(&m_ev);
+            snd_seq_ev_set_direct(&m_ev);
+            snd_seq_event_output_direct(mHandle, &m_ev);
+            snd_seq_drain_output(mHandle);
+           
         }
     }
+    snd_seq_ev_clear(&m_ev);
 }
 
 void Guitar::fret_callback(Fl_Button* b, void* data)

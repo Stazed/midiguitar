@@ -111,6 +111,9 @@ private:
     uint m_guitar_string_param;
     int  m_octave;
     int  m_last_used_fret;
+    char  m_midi_channel;
+    snd_seq_ev_note_t m_note; // for sending from fret mouse press
+    snd_seq_event_t m_ev;
     
     int storeFretLocation[7];
 
