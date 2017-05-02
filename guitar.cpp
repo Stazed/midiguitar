@@ -3,11 +3,12 @@
 #include <math.h>
 
 
-Guitar::Guitar(uint a_type, uint a_CC, std::string name):
+Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
     Fl_Double_Window(1020, 280,"Midi Guitar Player"),
     m_guitar_type(a_type),
     m_guitar_string_param(a_CC),
-    m_client_name(name)
+    m_client_name(name),
+    m_midi_channel(a_channel)
 {
     {
         Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Octave");
@@ -183,7 +184,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name):
         exit(-1);
     }
 
-    //temp_name = m_client_name + " OUT";
     sprintf(portname, "midi out");
     if ((out_port = snd_seq_create_simple_port(mHandle, portname,
                     SND_SEQ_PORT_CAP_READ|SND_SEQ_PORT_CAP_SUBS_READ,
@@ -203,7 +203,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name):
     m_bcontrol = true;
     m_last_fret = false;
     m_last_used_fret = -1;
-    m_midi_channel = 1; // FIXME command line
     
     for(int i = 0; i< 6; i++)
     {   
@@ -461,7 +460,7 @@ void Guitar::cb_fret_callback(Fl_Button* b)
                     label = "Open";
         
                 fret[i]->copy_label(label.c_str());
-                snd_seq_ev_set_noteon(&m_ev,m_midi_channel,m_note_array[string][nfret],0);
+                snd_seq_ev_set_noteoff(&m_ev,m_midi_channel,m_note_array[string][nfret],0);
             }
             
             //printf("string = %d: fret = %d: note %u\n",string,nfret, m_note_array[string][nfret]);

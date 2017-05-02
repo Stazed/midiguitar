@@ -118,7 +118,7 @@ private:
     int storeFretLocation[7];
 
 public:
-    Guitar(uint a_type, uint a_CC, std::string name);
+    Guitar(uint a_type, uint a_CC, std::string name, uint a_channel);
     virtual ~Guitar();
 
     float fret_distance(int num_fret);
