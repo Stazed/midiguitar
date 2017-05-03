@@ -8,7 +8,12 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
     m_guitar_type(a_type),
     m_guitar_string_param(a_CC),
     m_client_name(name),
-    m_midi_channel(a_channel)
+    m_midi_channel(a_channel),
+    m_have_string_toggle(false),
+    m_bReset(false),
+    m_bcontrol(true),
+    m_last_fret(false),
+    m_last_used_fret(-1)
 {
     {
         Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Octave");
@@ -175,7 +180,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
 
     snd_seq_set_client_name(mHandle,m_client_name.c_str());
     
-    sprintf(portname, "midi in");
+    sprintf(portname, "midi_in");
     if ((in_port = snd_seq_create_simple_port(mHandle, portname,
                    SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
                    SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
@@ -184,7 +189,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
         exit(-1);
     }
 
-    sprintf(portname, "midi out");
+    sprintf(portname, "midi_out");
     if ((out_port = snd_seq_create_simple_port(mHandle, portname,
                     SND_SEQ_PORT_CAP_READ|SND_SEQ_PORT_CAP_SUBS_READ,
                     SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
@@ -197,12 +202,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
     mPollFds = (struct pollfd *) calloc(mPollMax, sizeof(struct pollfd));
 
     snd_seq_nonblock(mHandle, 1);
-    
-    m_have_string_toggle = false;
-    m_bReset = false;
-    m_bcontrol = true;
-    m_last_fret = false;
-    m_last_used_fret = -1;
     
     for(int i = 0; i< 6; i++)
     {   

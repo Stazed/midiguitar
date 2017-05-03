@@ -84,9 +84,6 @@ private:
     Fl_Button *gtString[7];
     Fl_Button *fret[151];
 
-    struct pollfd *mPollFds;
-    int mPollMax, in_port, out_port;
-
     void cb_spin_callback(Fl_Spinner*);
     static void spin_callback(Fl_Spinner*, void*);
 
@@ -98,24 +95,28 @@ private:
     
     void cb_fret_callback(Fl_Button*);
     static void fret_callback(Fl_Button*, void*);
+    
+    struct pollfd *mPollFds;
+    int mPollMax, in_port, out_port;
 
-    snd_seq_t* mHandle; // handle and client for system notification events
+    snd_seq_t* mHandle;         // handle and client for system notification events
+    snd_seq_ev_note_t m_note;   // for sending from fret mouse press
+    snd_seq_event_t m_ev;       // for sending from fret mouse press
+    
+    std::string m_client_name;
     
     uint m_note_array[6][25];
+    int storeFretLocation[7];
+    
     bool m_have_string_toggle;
     bool m_last_fret;
     bool m_bReset;
     bool m_bcontrol;
     uint m_guitar_type;
-    std::string m_client_name;
     uint m_guitar_string_param;
     int  m_octave;
     int  m_last_used_fret;
     char  m_midi_channel;
-    snd_seq_ev_note_t m_note; // for sending from fret mouse press
-    snd_seq_event_t m_ev;
-    
-    int storeFretLocation[7];
 
 public:
     Guitar(uint a_type, uint a_CC, std::string name, uint a_channel);
