@@ -96,6 +96,9 @@ private:
     void cb_fret_callback(Fl_Button*);
     static void fret_callback(Fl_Button*, void*);
     
+    void cb_channel_callback(Fl_Spinner*);
+    static void channel_callback(Fl_Spinner*, void*);
+    
     struct pollfd *mPollFds;
     int mPollMax, in_port, out_port;
 
@@ -114,9 +117,10 @@ private:
     bool m_bcontrol;
     uint m_guitar_type;
     uint m_guitar_string_param;
-    int  m_octave;
+    int  m_transpose;
     int  m_last_used_fret;
-    char  m_midi_channel;
+    char m_midi_out_channel;
+    char m_midi_in_channel;
 
 public:
     Guitar(uint a_type, uint a_CC, std::string name, uint a_channel);

@@ -1,5 +1,6 @@
 #include "guitar.h"
 #include <FL/fl_ask.H>
+#include <FL/Fl_Tooltip.H>
 #include <math.h>
 
 
@@ -8,23 +9,28 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
     m_guitar_type(a_type),
     m_guitar_string_param(a_CC),
     m_client_name(name),
-    m_midi_channel(a_channel),
+    m_midi_out_channel(a_channel),
     m_have_string_toggle(false),
     m_bReset(false),
     m_bcontrol(true),
     m_last_fret(false),
-    m_last_used_fret(-1)
+    m_last_used_fret(-1),
+    m_transpose(0),
+    m_midi_in_channel(0)
 {
     {
-        Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Octave");
-        o->minimum(-3);
-        o->maximum(3);
-        o->value(m_octave);
+        Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Transpose");
+        o->minimum(-12);
+        o->maximum(12);
+        o->tooltip("Selected value will adjust incoming midi note up or down.");
+        o->value(m_transpose);
         o->align(Fl_Align(FL_ALIGN_TOP));
         o->callback((Fl_Callback*)spin_callback,this);
     } // Fl_Spinner* o
     {
         Fl_Button* o = new Fl_Button(60, 15, 70, 45, "Reset");
+        o->tooltip("Press button to clear all CC values and previous note calculation.\n"
+                    "Also, note OFF will be sent to all fret locations.");
         o->color((Fl_Color)2);
         o->selection_color((Fl_Color)135);
         o->callback((Fl_Callback*) reset_callback,this);
@@ -32,10 +38,23 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
     {
         Fl_Button* o = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
         o->type(1);
+        o->tooltip("Press button to stop program calculation of nearest fret.\n"
+                    "If pressed all possible note locations will be triggered.");
         o->color(FL_GREEN);
         o->selection_color(FL_FOREGROUND_COLOR);
         o->callback((Fl_Callback*) control_callback,this);
     } //
+    
+    {
+        Fl_Spinner* s = new Fl_Spinner(350, 30, 40, 25, "Midi Channel");
+        s->minimum(0);
+        s->maximum(16);
+        s->tooltip ("Enter the midi channel to receive input.\n"
+                    "Zero '0' means all channels.");
+        s->value(m_midi_in_channel);
+        s->align(Fl_Align(FL_ALIGN_TOP));
+        s->callback((Fl_Callback*)channel_callback,this);
+    } // Fl_Spinner* o
 
     int n = 0;
 
@@ -255,33 +274,36 @@ void Guitar::Timeout(void)
         if(ev)
         {
             snd_seq_free_event(ev);
-
-            if(ev->type == SND_SEQ_EVENT_CONTROLLER && ev->data.control.param == m_guitar_string_param && m_bcontrol == true)
-            {
-                if(ev->data.control.value >=1 && ev->data.control.value <=6) // must do or it gets sent to random key pointer
-                {
-                    m_have_string_toggle = true;
-                    m_last_fret = false;
-                    if(m_guitar_type == 0)
-                        stringToggle(ev->data.control.value -1);  // we use 0 to 5, but user is 1 to 6
-                    else
-                        stringToggle(5-(ev->data.control.value -1));
-                }
-            }
-
-            if (ev->type == SND_SEQ_EVENT_NOTEON)
-                fretToggle(ev->data.note.note,true);
-
-            if ((ev->type == SND_SEQ_EVENT_NOTEOFF))
-                fretToggle(ev->data.note.note,false);
             
-            snd_seq_ev_set_subs(ev);
-            snd_seq_ev_set_direct(ev);
-            snd_seq_ev_set_source(ev, out_port);
-            snd_seq_event_output_direct(mHandle, ev);
+            if(ev->data.note.channel == m_midi_in_channel-1  || m_midi_in_channel == 0 ||
+                    ev->data.control.channel == m_midi_in_channel-1)
+            {    
+                if(ev->type == SND_SEQ_EVENT_CONTROLLER && ev->data.control.param == m_guitar_string_param && m_bcontrol == true)
+                {
+                    if(ev->data.control.value >=1 && ev->data.control.value <=6) // must do or it gets sent to random key pointer
+                    {
+                        m_have_string_toggle = true;
+                        m_last_fret = false;
+                        if(m_guitar_type == 0)
+                            stringToggle(ev->data.control.value -1);  // we use 0 to 5, but user is 1 to 6
+                        else
+                            stringToggle(5-(ev->data.control.value -1));
+                    }
+                }
 
-            snd_seq_drain_output(mHandle);
+                if (ev->type == SND_SEQ_EVENT_NOTEON)
+                    fretToggle(ev->data.note.note,true);
 
+                if ((ev->type == SND_SEQ_EVENT_NOTEOFF))
+                    fretToggle(ev->data.note.note,false);
+
+                snd_seq_ev_set_subs(ev);
+                snd_seq_ev_set_direct(ev);
+                snd_seq_ev_set_source(ev, out_port);
+                snd_seq_event_output_direct(mHandle, ev);
+
+                snd_seq_drain_output(mHandle);
+            }
             snd_seq_free_event(ev);
             
         }
@@ -311,7 +333,7 @@ void Guitar::fretToggle(uint note,bool on_off)
          for(int j=0; j<25; j++)  // frets
          {
              static int I,J;
-             if((note + (m_octave * 12)) == m_note_array[i][j]) // did the note match the grid?
+             if((note + m_transpose) == m_note_array[i][j]) // did the note match the grid?
              {
                 found_fret = on_off;
                 // save the location
@@ -393,7 +415,7 @@ void Guitar::toggle_fret(int location, bool on_off)
 
 void Guitar::cb_spin_callback(Fl_Spinner* o)
 {
-    m_octave = o->value();
+    m_transpose = o->value();
 }
 
 void Guitar::spin_callback(Fl_Spinner* o, void* data)
@@ -450,7 +472,7 @@ void Guitar::cb_fret_callback(Fl_Button* b)
             if(fret[i]->value() == 1)
             {
                 fret[i]->copy_label(c_key_table_text[text_array]);
-                snd_seq_ev_set_noteon(&m_ev,m_midi_channel,m_note_array[string][nfret],127);
+                snd_seq_ev_set_noteon(&m_ev,m_midi_out_channel,m_note_array[string][nfret],127);
             }
             else
             {
@@ -459,7 +481,7 @@ void Guitar::cb_fret_callback(Fl_Button* b)
                     label = "Open";
         
                 fret[i]->copy_label(label.c_str());
-                snd_seq_ev_set_noteoff(&m_ev,m_midi_channel,m_note_array[string][nfret],0);
+                snd_seq_ev_set_noteoff(&m_ev,m_midi_out_channel,m_note_array[string][nfret],0);
             }
             
             //printf("string = %d: fret = %d: note %u\n",string,nfret, m_note_array[string][nfret]);
@@ -478,6 +500,16 @@ void Guitar::cb_fret_callback(Fl_Button* b)
 void Guitar::fret_callback(Fl_Button* b, void* data)
 {
     ((Guitar*)data)->cb_fret_callback(b);
+}
+
+void Guitar::cb_channel_callback(Fl_Spinner* o)
+{
+    m_midi_in_channel = o->value();
+}
+
+void Guitar::channel_callback(Fl_Spinner* o, void* data)
+{
+    ((Guitar*)data)->cb_channel_callback(o);
 }
 
 int Guitar::get_fret_center(uint x_or_y, uint h_or_w)
