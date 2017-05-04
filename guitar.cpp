@@ -5,16 +5,16 @@
 
 Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
     Fl_Double_Window(1020, 280,"Midi Guitar Player"),
-    m_guitar_type(a_type),
-    m_guitar_string_param(a_CC),
     m_client_name(name),
-    m_midi_out_channel(a_channel),
     m_have_string_toggle(false),
+    m_last_fret(false),
     m_bReset(false),
     m_bcontrol(true),
-    m_last_fret(false),
-    m_last_used_fret(-1),
+    m_guitar_type(a_type),
+    m_guitar_string_param(a_CC),
     m_transpose(0),
+    m_last_used_fret(-1),
+    m_midi_out_channel(a_channel),
     m_midi_in_channel(0)
 {
     {
@@ -416,7 +416,7 @@ void Guitar::spin_callback(Fl_Spinner* o, void* data)
     ((Guitar*)data)->cb_spin_callback(o);
 }
 
-void Guitar::cb_reset_callback(Fl_Button* o)
+void Guitar::cb_reset_callback(Fl_Button* )
 {
     m_bReset = true;
 }
@@ -445,6 +445,7 @@ void Guitar::control_callback(Fl_Button *b, void* data)
     ((Guitar*)data)->cb_control_callback(b);
 }
 
+/* Used for mouse press on fret location - sends midi note on/off based on fret */
 void Guitar::cb_fret_callback(Fl_Button* b)
 {
     for(int i=0; i<150; i++)
@@ -462,12 +463,12 @@ void Guitar::cb_fret_callback(Fl_Button* b)
             }
             snd_seq_ev_clear(&m_ev);
             
-            if(fret[i]->value() == 1)
+            if(fret[i]->value() == 1) // if ON note - display text & set midi note on
             {
                 fret[i]->copy_label(c_key_table_text[text_array]);
                 snd_seq_ev_set_noteon(&m_ev,m_midi_out_channel,m_note_array[string][nfret],127);
             }
-            else
+            else // note off - clear text & set midi note off
             {
                 std::string label = "";
                 if(nfret == 0)
@@ -479,17 +480,18 @@ void Guitar::cb_fret_callback(Fl_Button* b)
             
             //printf("string = %d: fret = %d: note %u\n",string,nfret, m_note_array[string][nfret]);
 
+            /* Send the midi note to out port */
             snd_seq_ev_set_source(&m_ev, out_port);
             snd_seq_ev_set_subs(&m_ev);
             snd_seq_ev_set_direct(&m_ev);
             snd_seq_event_output_direct(mHandle, &m_ev);
             snd_seq_drain_output(mHandle);
-           
         }
     }
     snd_seq_ev_clear(&m_ev);
 }
 
+/* Used for mouse press on fret location */
 void Guitar::fret_callback(Fl_Button* b, void* data)
 {
     ((Guitar*)data)->cb_fret_callback(b);
@@ -557,5 +559,4 @@ int Guitar::calculate_closest_fret()
    // printf("closest_fret %d\n",closest_fret);
     
     return closest_fret;
-    
 }
