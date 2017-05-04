@@ -1,6 +1,5 @@
 #include "guitar.h"
 #include <FL/fl_ask.H>
-#include <FL/Fl_Tooltip.H>
 #include <math.h>
 
 
@@ -59,28 +58,22 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
     int n = 0;
 
     {
-        Fl_Button* b = new Fl_Button(60,80,15,15);    // first OPEN string position 
+        Fl_Text_Display* b = new Fl_Text_Display(65,90,15,15);    // first OPEN string position 
         b->box(FL_NO_BOX);
         b->labelsize(9);
         b->copy_label(SSTR( n ).c_str()); // position 0
-        b->color(FL_GREEN);
-        b->color2(FL_BLACK);
-        //b->align(Fl_Align(FL_ALIGN_TOP));
         n++;
     }
-    for(int x=0; x<24; x++) // the numbered fret positions & round buttons(now invisible)
+    for(int x=0; x<24; x++) // the numbered fret positions
     {
         float distance1 = Guitar::fret_distance(x);
         float distance2 = Guitar::fret_distance(x+1);
         float X = distance1 +((distance2 - distance1)/2);
 
-        Fl_Button* b = new Fl_Button((X*60.4)+90,80,15,15);
+        Fl_Text_Display* b = new Fl_Text_Display((X*60.4)+95,90,15,15);
         b->box(FL_NO_BOX);
         b->labelsize(9);
         b->copy_label(SSTR( n ).c_str()); // n = 1 to 24
-        b->color(FL_GREEN);
-        b->color2(FL_BLACK);
-        //b->align(Fl_Align(FL_ALIGN_TOP));
         n++;
     }
 
@@ -88,7 +81,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
 
     for (int y=0; y<6; y++)
     {
-        Fl_Button* b = new Fl_Button(45,(y+1)*c_global_fret_height+(y>=6?12*40:75),45,c_global_fret_height,"Open");
+        Fl_Button* b = new Fl_Button(50,(y+1)*c_global_fret_height+(y>=6?12*40:75),45,c_global_fret_height,"Open");
         b->color(FL_YELLOW);
         b->color2(FL_RED);
         b->when(FL_WHEN_CHANGED);
@@ -101,7 +94,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
             float distance2 = Guitar::fret_distance(x+1);
 
             float fret_W = distance2 - distance1;
-            Fl_Button* b = new Fl_Button((distance1*c_global_pixel_scale)+90,(y+1)*c_global_fret_height+(y>=6?12*40:75),fret_W*c_global_pixel_scale,c_global_fret_height);
+            Fl_Button* b = new Fl_Button((distance1*c_global_pixel_scale)+95,(y+1)*c_global_fret_height+(y>=6?12*40:75),fret_W*c_global_pixel_scale,c_global_fret_height);
             b->color((Fl_Color)18);
             b->color2(FL_RED);
             b->when(FL_WHEN_CHANGED);
@@ -142,7 +135,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
 
     for(int i = 0; i < 6; i++)
     {
-        Fl_Button* o = new Fl_Button(25, y, 15, 15);
+        Fl_Button* o = new Fl_Button(30, y, 15, 15);
         o->box(FL_ROUND_UP_BOX);
         o->color(FL_GREEN);
         char temp[2] = {};
@@ -157,7 +150,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
     y=100;
     for(int i = 0; i < 6; i++)
     {
-        Fl_Button* o = new Fl_Button(12, y, 15, 15);
+        Fl_Button* o = new Fl_Button(17, y, 15, 15);
         o->box(FL_NO_BOX);
         o->labelsize(9);
         
@@ -173,16 +166,16 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel):
         y += c_global_fret_height;
     }
     
-    Guitar::marker(255,250);
-    Guitar::marker(367,250);
-    Guitar::marker(470,250);
-    Guitar::marker(564,250);
-    Guitar::marker(683,250);
-    Guitar::marker(683,270);
-    Guitar::marker(783,250);
-    Guitar::marker(839,250);
-    Guitar::marker(890,250);
-    Guitar::marker(936,250);
+    Guitar::marker(260,250);
+    Guitar::marker(372,250);
+    Guitar::marker(475,250);
+    Guitar::marker(571,250);
+    Guitar::marker(688,250);
+    Guitar::marker(688,270);
+    Guitar::marker(788,250);
+    Guitar::marker(844,250);
+    Guitar::marker(895,250);
+    Guitar::marker(941,250);
 
     this->size_range(1020,280,0,0,0,0,1); // sets minimum & the 1 = scalable
     this->resizable(this);
