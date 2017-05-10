@@ -77,12 +77,25 @@ const uint guitarReverseNote[6][25]=
 const uint c_global_pixel_scale = 61;
 const uint c_global_fret_height = 20;
 
+/* This class is not needed - just a wrapper for Fl_Button*/
+class Fret:public Fl_Button
+{
+private:
+    
+public:
+    Fret(int x, int y, int w, int h, const char *label = 0);
+};
+
+
+
+
+
 class Guitar:public Fl_Double_Window
 {
 private:
 
     Fl_Button *gtString[7];
-    Fl_Button *fret[151];
+    Fret *fret[151];
 
     void cb_spin_callback(Fl_Spinner*);
     static void spin_callback(Fl_Spinner*, void*);
@@ -93,8 +106,8 @@ private:
     void cb_control_callback(Fl_Button*);
     static void control_callback(Fl_Button*, void*);
     
-    void cb_fret_callback(Fl_Button*);
-    static void fret_callback(Fl_Button*, void*);
+    void cb_fret_callback(Fret*);
+    static void fret_callback(Fret*, void*);
     
     void cb_channel_callback(Fl_Spinner*);
     static void channel_callback(Fl_Spinner*, void*);
@@ -119,6 +132,7 @@ private:
     uint m_guitar_string_param;
     int  m_transpose;
     int  m_last_used_fret;
+    int  m_last_focus_fret;
     char m_midi_out_channel;
     char m_midi_in_channel;
 
@@ -151,7 +165,9 @@ public:
     
     int get_fret_center(uint x_or_y, uint h_or_w);
     int calculate_closest_fret();
-
+    
+    Fret *get_adjacent_fret(int last_fret);
+    Fret *get_drag_fret();
 };
 
 
