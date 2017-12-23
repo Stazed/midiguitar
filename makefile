@@ -27,7 +27,7 @@ LIB_DEBUG = $(LIB)
 LDFLAGS_DEBUG = $(LDFLAGS)
 OBJDIR_DEBUG = obj/Debug
 DEP_DEBUG = 
-OUT_DEBUG = bin/Debug/GuitarMidi
+OUT_DEBUG = bin/Debug/midiguitar
 
 INC_RELEASE = $(INC)
 CFLAGS_RELEASE = $(CFLAGS) -O2 -s -Wall -Wextra
@@ -38,7 +38,7 @@ LIB_RELEASE = $(LIB)
 LDFLAGS_RELEASE = $(LDFLAGS)
 OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
-OUT_RELEASE = bin/Release/GuitarMidi
+OUT_RELEASE = bin/Release/midiguitar
 
 OBJ_DEBUG = $(OBJDIR_DEBUG)/guitar.o $(OBJDIR_DEBUG)/main.o
 
