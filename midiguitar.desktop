@@ -1,0 +1,11 @@
+
+[Desktop Entry]
+Name=Midi-Guitar
+GenericName=Midi Guitar
+Comment=Simple midi guitar player
+Exec=midiguitar
+Icon=midi_guitar_48.png
+Categories=AudioVideo;Audio;X-Jack;Midi;X-MIDI;
+Terminal=false
+Type=Application
+Keywords=Audio;Sound;Guitar;Amplifier;Record;Midi;Jack;
