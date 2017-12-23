@@ -113,6 +113,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             b->color2(FL_RED);
             b->when(FL_WHEN_CHANGED);
             b->align(FL_ALIGN_CLIP);
+            b->labelsize(10);
             b->callback((Fl_Callback*) fret_callback, this);
             fret[n] = b;
             g->add(b);
