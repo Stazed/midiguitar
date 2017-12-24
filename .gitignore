@@ -1,0 +1,7 @@
+*.o
+midiguitar
+.deps/
+Makefile
+config.log
+config.status
+
