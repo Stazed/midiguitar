@@ -10,36 +10,36 @@ How to install?
 
 How to use midiguitar?
 
-    -As a player
+-As a player
 
-        Midiguitar can display fret locations from midi notes when received from a player. It was designed to work with a sequencer such as seq32, seq42 (or seq24, sequencer64, etc).  When midiguitar receives a midi note,	it will display the note by turning the fret or open string location red, and also indicate the midi note value and letter value.
+    Midiguitar can display fret locations from midi notes when received from a player. It was designed to work with a sequencer such as seq32, seq42 (or seq24, sequencer64, etc).  When midiguitar receives a midi note,	it will display the note by turning the fret or open string location red, and also indicate the midi note value and letter value.
 
-        The basic problem with using midi with a guitar is that unlike piano keyboards, the guitar can play the same tone (midi note) from multiple locations. There is no one to one midi correlation as with a piano keyboard. 
+The basic problem with using midi with a guitar is that unlike piano keyboards, the guitar can play the same tone (midi note) from multiple locations. There is no one to one midi correlation as with a piano keyboard. 
 
-        Midiguitar uses two methods:
+    Midiguitar uses two methods:
 
-            1.  Calculate nearest fret (default).
-                The program will loop through each possible midi note location and based on the previous note played, determine the nearest fret to play. This method works... sometimes. It does not work with chords (multiple notes played at the same time), and won't work with open strings (no fret location), and does not work if pitch bending (string bending). Also, a starting string location must be set or the	program will assume the first midi note found. In addition, if the play requires a jump to a more distant fret, then the new string location must be indicated.
+    1.  Calculate nearest fret (default).
+        The program will loop through each possible midi note location and based on the previous note played, determine the nearest fret to play. This method works... sometimes. It does not work with chords (multiple notes played at the same time), and won't work with open strings (no fret location), and does not work if pitch bending (string bending). Also, a starting string location must be set or the	program will assume the first midi note found. In addition, if the play requires a jump to a more distant fret, then the new string location must be indicated.
 
-                This method is for single note (lead) playing. 	
+        This method is for single note (lead) playing. 	
 
-                To allow for setting the starting string location or string jumps, a midi CC message can be sent prior to the given note.
+        To allow for setting the starting string location or string jumps, a midi CC message can be sent prior to the given note.
 
-                Send CC message for note calculation (default CC 16) based on string starting location 1 to 6. The string number is indicated to the left of the guitar fret OPEN strings.
+        Send CC message for note calculation (default CC 16) based on string starting location 1 to 6. The string number is indicated to the left of the guitar fret OPEN strings.
 
-                The default CC value can be changed from the command line -s option.
+        The default CC value can be changed from the command line -s option.
 
-            2.  Send to all frets. (Press the "Control On/Off" button).
-                The program will display all possible fret and open string locations based on the midi note received.
+    2.  Send to all frets. (Press the "Control On/Off" button).
+        The program will display all possible fret and open string locations based on the midi note received.
 
-                The Transpose selector can be used to adjust incoming midi up or down by single notes.
+        The Transpose selector can be used to adjust incoming midi up or down by single notes.
 
-                The Midi Channel will select the midi channel to listen. Default '0' will use all channels.
+        The Midi Channel will select the midi channel to listen. Default '0' will use all channels.
 
-    -As a generator
-        Left mouse press (or drag) on fret or open string to send midi note message.
+-As a generator
+    Left mouse press (or drag) on fret or open string to send midi note message.
 
-        Use the command line -c option to select the midi channel for sending notes.
+    Use the command line -c option to select the midi channel for sending notes.
 
 
 See command line -h for additional options.
