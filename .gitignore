@@ -2,6 +2,14 @@
 midiguitar
 .deps/
 Makefile
+Makefile.in
 config.log
 config.status
-
+configure
+depcomp
+install-sh
+missing
+aclocal.m4
+autom4te.cache/
+compile
+midiguitar-1.0.tar.gz

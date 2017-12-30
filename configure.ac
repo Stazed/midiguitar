@@ -12,6 +12,12 @@ AC_PROG_CXX
 AC_PROG_CC
 
 # Checks for libraries.
+AC_CHECK_LIB([fltk], [main], [], [
+  AC_MSG_ERROR([unable to find fltk library.])
+])
+
+AC_CHECK_LIB(asound, snd_pcm_open,,
+     AC_MSG_ERROR(Essential library asound not found))
 
 # Checks for header files.
 
