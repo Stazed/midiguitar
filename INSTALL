@@ -1,5 +1,8 @@
 INSTALLING
 Run:
+$ autoreconf -i  # to generate configure script
+
+Then:
 $ ./configure
 $ make
 # make install
