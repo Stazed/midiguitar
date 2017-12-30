@@ -294,6 +294,7 @@ void Guitar::Timeout(void)
     if (m_bReset)
         Guitar::reset_all_controls();
 
+    /* For MIDI incoming messages */
     snd_seq_event_t *ev;
     do
     {
@@ -339,6 +340,7 @@ void Guitar::Timeout(void)
         }
     } while (ev);
 
+    /* For MIDI sending messages */
     if (Fl::event_button1() && Fl::event() == FL_DRAG)
     {
         if (m_last_focus_fret == -1)
@@ -580,7 +582,10 @@ Fret *Guitar::get_drag_fret()
 void Guitar::fret_callback(Fret* b, void* data)
 {
     if (Fl::event() != FL_DRAG) // user pressed the fret
-        ((Guitar*) data)->cb_fret_callback(b);
+    {
+        if(Fl::event_button1()) // only on button press, not release
+            ((Guitar*) data)->cb_fret_callback(b);
+    }
     else // dragging on the fret
         b->value(1); // need this since timeout code will take care of callback()
 }
