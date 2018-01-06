@@ -271,7 +271,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     if(init_rt_midi_in())
     {
         m_midiIn->openVirtualPort("Input");
-        m_midiIn->setCallback(rtMidiCallback, (void*)m_midiOut);
+        m_midiIn->setCallback(rtMidiCallback, (void*)this);
     }
     
 #endif
@@ -291,13 +291,14 @@ Guitar::~Guitar()
 #ifdef RTMIDI
 void Guitar::rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData)
 {
-    RtMidiOut *midiout = (RtMidiOut*) userData;
+    Guitar *MidiGit = (Guitar*)userData;
+
     unsigned int nBytes = message->size();
     if(nBytes)
     {
         // TODO trigger notes here
     
-        midiout->sendMessage(message ); // Pass thru to out port
+        MidiGit->m_midiOut->sendMessage(message ); // Pass thru to out port
     }
 }
 
