@@ -381,6 +381,27 @@ bool Guitar::init_rt_midi_out()
     }
     return true;
 }
+
+void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = ON, false = Off
+{
+    uint velocity = 127;    // default for note on
+    m_message.clear();
+    
+    if(OnorOff)
+    {
+        m_message.push_back(144 + m_midi_out_channel);       // status note ON
+    }else
+    {
+        m_message.push_back(128 + m_midi_out_channel);       // status note Off
+        velocity = 64;
+    }
+    
+    m_message.push_back(note);
+    m_message.push_back(velocity);
+    
+    m_midiOut->sendMessage(&m_message);
+}
+
 #endif
 
 float Guitar::fret_distance(int num_fret)
@@ -658,6 +679,9 @@ void Guitar::cb_fret_callback(Fret* b)
             {
                 fret[i]->copy_label(c_key_table_text[text_array]);
                 snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], 127);
+#ifdef RTMIDI
+                sendMidiNote(m_note_array[string][nfret], true);
+#endif
             } else // note off - clear text & set midi note off
             {
                 std::string label = "";
@@ -666,6 +690,9 @@ void Guitar::cb_fret_callback(Fret* b)
 
                 fret[i]->copy_label(label.c_str());
                 snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, m_note_array[string][nfret], 0);
+#ifdef RTMIDI
+                sendMidiNote(m_note_array[string][nfret], false);
+#endif
             }
 
             //printf("string = %d: fret = %d: note %u\n",string,nfret, m_note_array[string][nfret]);

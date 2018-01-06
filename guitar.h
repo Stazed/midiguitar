@@ -142,16 +142,17 @@ private:
 #ifdef RTMIDI
     RtMidiIn  *m_midiIn;
     RtMidiOut *m_midiOut;
+    std::vector<unsigned char> m_message;
     
     bool init_rt_midi_in();
     bool init_rt_midi_out();
+    void sendMidiNote(uint note, bool OnorOff);    // bool OnorOff true = ON, false = Off
 #endif    
 
     struct pollfd *mPollFds;
     int mPollMax, in_port, out_port;
 
     snd_seq_t* mHandle;             // handle and client for system notification events
-    snd_seq_ev_note_t m_note;       // for sending from fret mouse press
     snd_seq_event_t m_ev;           // for sending from fret mouse press
 
     std::string m_client_name;
@@ -180,7 +181,6 @@ public:
     void marker(int x, int y);
     
 #ifdef RTMIDI
-    
     void playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes);
     static void rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
 #endif
