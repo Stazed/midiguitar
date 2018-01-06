@@ -264,7 +264,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     
 #ifdef RTMIDI
     
-    
+    // TODO take care of fail
     if(init_rt_midi_out())
         m_midiOut->openVirtualPort("Output");
     
@@ -292,10 +292,7 @@ Guitar::~Guitar()
 
 void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes)
 {
-    if (m_bReset)
-        Guitar::reset_all_controls();
-    
-    /* We only care about these */
+    /* We only care about note on/off and CC which are 3 bytes */
     if(nBytes != 3)
         return;
     
@@ -304,11 +301,12 @@ void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int 
     
     status = message->at(0);
     channel = (message->at(0)  & EVENT_CHANNEL);
-    parameter = message->at(1);
-    value = message->at(2);
+    parameter = message->at(1);     // for notes = key, for CC = which one
+    value = message->at(2);         // for notes = velocity, for CC = value sent
     
-//    printf("Channel = %d: parameter = %d: value = %d\n", channel, parameter, value);
-    
+    /* For Notes & CC we compare with EVENT_CLEAR_CHAN_MASK because we do not 
+     want to iterate through 16 different items do to the channel bit. So we
+     mask it off to compare to the single generic note or CC*/
     
     if(channel == m_midi_in_channel - 1 || m_midi_in_channel == 0 ||
             channel == m_midi_in_channel - 1)
@@ -351,7 +349,8 @@ void Guitar::rtMidiCallback(double deltatime, std::vector< unsigned char > *mess
 
 bool Guitar::init_rt_midi_in()
 {
-    m_midiIn = new RtMidiIn(RtMidi::UNSPECIFIED,"Midi Guitar In");
+    std::string clientName = m_client_name + " In";
+    m_midiIn = new RtMidiIn(RtMidi::UNSPECIFIED, clientName);
 
     // Check available ports.
     unsigned int nPorts = m_midiIn->getPortCount();
@@ -369,9 +368,10 @@ bool Guitar::init_rt_midi_in()
 bool Guitar::init_rt_midi_out()
 {  
     // RtMidiOut constructor
+    std::string clientName = m_client_name + " Out";
     try
     {
-        m_midiOut = new RtMidiOut(RtMidi::UNSPECIFIED,"Midi Guitar Out");
+        m_midiOut = new RtMidiOut(RtMidi::UNSPECIFIED, clientName);
     }
     catch ( RtMidiError &error )
     {
