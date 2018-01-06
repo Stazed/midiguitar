@@ -32,6 +32,14 @@
 #include <alsa/asoundlib.h>
 #include <sstream>
 
+#define RTMIDI
+
+#ifdef RTMIDI
+
+#include "RtMidi.h"
+//#include <cstdlib>
+#endif
+
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
 
@@ -122,6 +130,14 @@ private:
 
     void cb_channel_callback(Fl_Spinner*);
     static void channel_callback(Fl_Spinner*, void*);
+    
+#ifdef RTMIDI
+    RtMidiIn  *m_midiIn;
+    RtMidiOut *m_midiOut;
+    
+    bool init_rt_midi_in();
+    bool init_rt_midi_out();
+#endif    
 
     struct pollfd *mPollFds;
     int mPollMax, in_port, out_port;
@@ -154,7 +170,11 @@ public:
     float fret_distance(int num_fret);
 
     void marker(int x, int y);
-
+    
+#ifdef RTMIDI
+    static void rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
+#endif
+    
     snd_seq_t* GetHandle(void)
     {
         return mHandle;

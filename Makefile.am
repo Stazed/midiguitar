@@ -7,7 +7,9 @@ LDFLAGS = -lasound -lfltk
 # this lists the binaries to produce, the (non-PHONY, binary) targets in
 # the previous manual Makefile
 bin_PROGRAMS = midiguitar
-midiguitar_SOURCES = main.cpp guitar.cpp guitar.h
+
+#FIXME: don't compile RtMidi if not defined
+midiguitar_SOURCES = main.cpp guitar.cpp RtMidi.cpp guitar.h RtMidi.h
 
 desktopdir = $(datadir)/applications
 desktop_DATA = midiguitar.desktop

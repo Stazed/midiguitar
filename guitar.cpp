@@ -44,6 +44,11 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_last_focus_fret(-1),
     m_midi_out_channel(a_channel),
     m_midi_in_channel(0)
+#ifdef RTMIDI
+    ,m_midiIn(0)
+    ,m_midiOut(0)
+#endif
+        
 {
     {
         Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Transpose");
@@ -256,14 +261,79 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         stringToggle(i);
         storeFretLocation[i] = -1;
     }
+    
+#ifdef RTMIDI
+    
+    
+    if(init_rt_midi_out())
+        m_midiOut->openPort( 0 , "Output");
+    
+    if(init_rt_midi_in())
+    {
+        m_midiIn->openPort(0, "Input");
+        m_midiIn->setCallback(rtMidiCallback, (void*)m_midiOut);
+    }
+    
+#endif
     //ctor
 }
 
 Guitar::~Guitar()
 {
     snd_seq_close(mHandle);
+#ifdef RTMIDI
+    delete m_midiIn;
+    delete m_midiOut;
+#endif
     //dtor
 }
+
+#ifdef RTMIDI
+void Guitar::rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData)
+{
+    RtMidiOut *midiout = (RtMidiOut*) userData;
+    unsigned int nBytes = message->size();
+    if(nBytes)
+    {
+        // TODO trigger notes here
+    
+        midiout->sendMessage(message ); // Pass thru to out port
+    }
+}
+
+bool Guitar::init_rt_midi_in()
+{
+    m_midiIn = new RtMidiIn(RtMidi::UNSPECIFIED,"Midi Guitar In");
+
+    // Check available ports.
+    unsigned int nPorts = m_midiIn->getPortCount();
+
+    if (nPorts == 0)
+    {
+        std::cout << "No ports available!\n";
+        return false;
+ //       delete midiinJack;
+ //       exit( EXIT_FAILURE );
+    }
+    return true;
+}
+
+bool Guitar::init_rt_midi_out()
+{  
+    // RtMidiOut constructor
+    try
+    {
+        m_midiOut = new RtMidiOut(RtMidi::UNSPECIFIED,"Midi Guitar Out");
+    }
+    catch ( RtMidiError &error )
+    {
+       error.printMessage();
+      //exit( EXIT_FAILURE );
+        return false;
+    }
+    return true;
+}
+#endif
 
 float Guitar::fret_distance(int num_fret)
 {
