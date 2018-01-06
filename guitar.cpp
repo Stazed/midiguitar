@@ -266,11 +266,11 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     
     
     if(init_rt_midi_out())
-        m_midiOut->openPort( 0 , "Output");
+        m_midiOut->openVirtualPort("Output");
     
     if(init_rt_midi_in())
     {
-        m_midiIn->openPort(0, "Input");
+        m_midiIn->openVirtualPort("Input");
         m_midiIn->setCallback(rtMidiCallback, (void*)m_midiOut);
     }
     
