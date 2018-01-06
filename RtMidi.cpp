@@ -79,11 +79,11 @@ void RtMidi :: getCompiledApi( std::vector<RtMidi::Api> &apis ) throw()
 #if defined(__MACOSX_CORE__)
   apis.push_back( MACOSX_CORE );
 #endif
-#if defined(__LINUX_ALSA__)
-  apis.push_back( LINUX_ALSA );
-#endif
 #if defined(__UNIX_JACK__)
   apis.push_back( UNIX_JACK );
+#endif
+#if defined(__LINUX_ALSA__)
+  apis.push_back( LINUX_ALSA );
 #endif
 #if defined(__WINDOWS_MM__)
   apis.push_back( WINDOWS_MM );
