@@ -38,6 +38,14 @@
 
 #include "RtMidi.h"
 //#include <cstdlib>
+
+const unsigned char  EVENT_STATUS_BIT       = 0x80;
+const unsigned char  EVENT_NOTE_OFF         = 0x80;
+const unsigned char  EVENT_NOTE_ON          = 0x90;
+const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;
+const unsigned char  EVENT_CLEAR_CHAN_MASK  = 0xF0;
+const unsigned char  EVENT_CHANNEL          = 0x0F;
+
 #endif
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
@@ -172,6 +180,8 @@ public:
     void marker(int x, int y);
     
 #ifdef RTMIDI
+    
+    void playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes);
     static void rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
 #endif
     

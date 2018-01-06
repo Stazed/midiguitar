@@ -289,6 +289,53 @@ Guitar::~Guitar()
 }
 
 #ifdef RTMIDI
+
+void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes)
+{
+    if (m_bReset)
+        Guitar::reset_all_controls();
+    
+    /* We only care about these */
+    if(nBytes != 3)
+        return;
+    
+    /* events */
+    unsigned char status = 0, channel = 0, parameter = 0, value = 0; 
+    
+    status = message->at(0);
+    channel = (message->at(0)  & EVENT_CHANNEL);
+    parameter = message->at(1);
+    value = message->at(2);
+    
+//    printf("Channel = %d: parameter = %d: value = %d\n", channel, parameter, value);
+    
+    
+    if(channel == m_midi_in_channel - 1 || m_midi_in_channel == 0 ||
+            channel == m_midi_in_channel - 1)
+    {
+        if (((status & EVENT_CLEAR_CHAN_MASK) == EVENT_CONTROL_CHANGE) &&
+            (parameter == m_guitar_string_param) &&
+            (m_bcontrol == true))
+        {
+            if (value >= 1 && value <= 6)       // must do or it gets sent to random key pointer
+            {
+                m_have_string_toggle = true;
+                m_last_fret = false;
+                if (m_guitar_type == 0)
+                    stringToggle(value - 1);    // we use 0 to 5, but user is 1 to 6
+                else
+                    stringToggle(5 - (value - 1));
+            }
+        }
+              
+        if ((status & EVENT_CLEAR_CHAN_MASK) == EVENT_NOTE_ON)
+            fretToggle(parameter, true);
+
+        if ((status & EVENT_CLEAR_CHAN_MASK) == EVENT_NOTE_OFF)
+            fretToggle(parameter, false);
+    }
+}
+
 void Guitar::rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData)
 {
     Guitar *MidiGit = (Guitar*)userData;
@@ -296,7 +343,7 @@ void Guitar::rtMidiCallback(double deltatime, std::vector< unsigned char > *mess
     unsigned int nBytes = message->size();
     if(nBytes)
     {
-        // TODO trigger notes here
+        MidiGit->playMidiGuitar(message, nBytes);
     
         MidiGit->m_midiOut->sendMessage(message ); // Pass thru to out port
     }
