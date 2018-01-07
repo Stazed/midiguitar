@@ -30,6 +30,7 @@
 #include <FL/Fl_Round_Button.H>
 #include <FL/Fl_Text_Display.H>
 #include <sstream>
+#include "config.h"
 
 
 #ifdef ALSA_SUPPORT
@@ -126,6 +127,8 @@ private:
 
     Fl_Button *gtString[7];
     Fret *fret[151];
+    
+    std::string m_windowLabel;
 
     void cb_spin_callback(Fl_Spinner*);
     static void spin_callback(Fl_Spinner*, void*);

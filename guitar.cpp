@@ -32,6 +32,7 @@ Fret::Fret(int x, int y, int w, int h, const char *label) :
 
 Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     Fl_Double_Window(1020, 280, "Midi Guitar Player"),
+    m_windowLabel("Midi Guitar "),
     m_client_name(name),
     m_have_string_toggle(false),
     m_last_fret(false),
@@ -227,6 +228,9 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         stringToggle(i);
         storeFretLocation[i] = -1;
     }
+    
+    m_windowLabel += PACKAGE_VERSION;
+    Guitar::label(m_windowLabel.c_str());
 
 #ifdef ALSA_SUPPORT
     mHandle = 0;

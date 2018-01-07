@@ -5,7 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT(midiguitar, 0.1, stazed10@gmail.com)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([main.cpp])
-# AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -48,10 +48,10 @@ AC_ARG_ENABLE(rtmidi,
 if test "$rtmidi" != "no"; then
     AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
     if test "x$ac_asound" = "xyes"; then
-    AC_DEFINE(__LINUX_ALSA__)
+    AC_DEFINE([__LINUX_ALSA__], [], [Define to enable alsa to be used by rtmidi])
     fi
     if test "x$ac_jack" = "xyes"; then
-    AC_DEFINE(__UNIX_JACK__ )
+    AC_DEFINE([__UNIX_JACK__], [], [Define to enable jack to be used by rtmidi])
     fi
     AC_MSG_RESULT([rtmidi native build enabled]);
 else
