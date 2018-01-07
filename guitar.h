@@ -29,15 +29,18 @@
 #include <FL/Fl_Spinner.H>
 #include <FL/Fl_Round_Button.H>
 #include <FL/Fl_Text_Display.H>
-#include <alsa/asoundlib.h>
 #include <sstream>
 
-//#define USE_RTMIDI
+#define ALSA_SUPPORT
 
-#ifdef USE_RTMIDI
+#ifdef ALSA_SUPPORT
+#include <alsa/asoundlib.h>
+#endif
 
+//#define RTMDI_SUPPORT
+
+#ifdef RTMDI_SUPPORT
 #include "RtMidi.h"
-//#include <cstdlib>
 
 const unsigned char  EVENT_STATUS_BIT       = 0x80;
 const unsigned char  EVENT_NOTE_OFF         = 0x80;
@@ -46,7 +49,9 @@ const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;
 const unsigned char  EVENT_CLEAR_CHAN_MASK  = 0xF0;
 const unsigned char  EVENT_CHANNEL          = 0x0F;
 
-#endif  // USE_RTMIDI
+const unsigned char  MIDINOTEON             = 144;
+const unsigned char  MIDINOTEOFF            = 128;
+#endif  // RTMDI_SUPPORT
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
@@ -139,7 +144,7 @@ private:
     void cb_channel_callback(Fl_Spinner*);
     static void channel_callback(Fl_Spinner*, void*);
     
-#ifdef USE_RTMIDI
+#ifdef RTMDI_SUPPORT
     RtMidiIn  *m_midiIn;
     RtMidiOut *m_midiOut;
     std::vector<unsigned char> m_message;
@@ -149,12 +154,13 @@ private:
     void sendMidiNote(uint note, bool OnorOff);    // bool OnorOff true = ON, false = Off
 #endif    
 
+#ifdef ALSA_SUPPORT
     struct pollfd *mPollFds;
     int mPollMax, in_port, out_port;
 
     snd_seq_t* mHandle;             // handle and client for system notification events
     snd_seq_event_t m_ev;           // for sending from fret mouse press
-
+#endif
     std::string m_client_name;
 
     uint m_note_array[6][25];
@@ -180,16 +186,15 @@ public:
 
     void marker(int x, int y);
     
-#ifdef USE_RTMIDI
+#ifdef RTMDI_SUPPORT
     void playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes);
     static void rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
 #endif
-    
-    snd_seq_t* GetHandle(void)
-    {
-        return mHandle;
-    }
 
+#ifdef ALSA_SUPPORT
+    snd_seq_t* GetHandle(void) {return mHandle;}
+#endif
+    
     static void TimeoutStatic(void* ptr)
     {
         ((Guitar*) ptr)->Timeout();
