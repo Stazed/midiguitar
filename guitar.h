@@ -32,9 +32,9 @@
 #include <alsa/asoundlib.h>
 #include <sstream>
 
-#define RTMIDI
+//#define USE_RTMIDI
 
-#ifdef RTMIDI
+#ifdef USE_RTMIDI
 
 #include "RtMidi.h"
 //#include <cstdlib>
@@ -46,7 +46,7 @@ const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;
 const unsigned char  EVENT_CLEAR_CHAN_MASK  = 0xF0;
 const unsigned char  EVENT_CHANNEL          = 0x0F;
 
-#endif
+#endif  // USE_RTMIDI
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
@@ -139,7 +139,7 @@ private:
     void cb_channel_callback(Fl_Spinner*);
     static void channel_callback(Fl_Spinner*, void*);
     
-#ifdef RTMIDI
+#ifdef USE_RTMIDI
     RtMidiIn  *m_midiIn;
     RtMidiOut *m_midiOut;
     std::vector<unsigned char> m_message;
@@ -180,7 +180,7 @@ public:
 
     void marker(int x, int y);
     
-#ifdef RTMIDI
+#ifdef USE_RTMIDI
     void playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes);
     static void rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
 #endif

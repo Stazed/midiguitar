@@ -44,7 +44,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_last_focus_fret(-1),
     m_midi_out_channel(a_channel),
     m_midi_in_channel(0)
-#ifdef RTMIDI
+#ifdef USE_RTMIDI
     ,m_midiIn(0)
     ,m_midiOut(0)
 #endif
@@ -262,8 +262,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         storeFretLocation[i] = -1;
     }
     
-#ifdef RTMIDI
-    
+#ifdef USE_RTMIDI
     // TODO take care of fail
     if(init_rt_midi_out())
         m_midiOut->openVirtualPort("Output");
@@ -273,7 +272,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         m_midiIn->openVirtualPort("Input");
         m_midiIn->setCallback(rtMidiCallback, (void*)this);
     }
-    
 #endif
     //ctor
 }
@@ -281,14 +279,14 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
 Guitar::~Guitar()
 {
     snd_seq_close(mHandle);
-#ifdef RTMIDI
+#ifdef USE_RTMIDI
     delete m_midiIn;
     delete m_midiOut;
 #endif
     //dtor
 }
 
-#ifdef RTMIDI
+#ifdef USE_RTMIDI
 
 void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes)
 {
@@ -402,7 +400,7 @@ void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = O
     m_midiOut->sendMessage(&m_message);
 }
 
-#endif
+#endif // USE_RTMIDI
 
 float Guitar::fret_distance(int num_fret)
 {
@@ -679,7 +677,7 @@ void Guitar::cb_fret_callback(Fret* b)
             {
                 fret[i]->copy_label(c_key_table_text[text_array]);
                 snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], 127);
-#ifdef RTMIDI
+#ifdef USE_RTMIDI
                 sendMidiNote(m_note_array[string][nfret], true);
 #endif
             } else // note off - clear text & set midi note off
@@ -690,7 +688,7 @@ void Guitar::cb_fret_callback(Fret* b)
 
                 fret[i]->copy_label(label.c_str());
                 snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, m_note_array[string][nfret], 0);
-#ifdef RTMIDI
+#ifdef USE_RTMIDI
                 sendMidiNote(m_note_array[string][nfret], false);
 #endif
             }
