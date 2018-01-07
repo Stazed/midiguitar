@@ -31,15 +31,13 @@
 #include <FL/Fl_Text_Display.H>
 #include <sstream>
 
-#define ALSA_SUPPORT
 
 #ifdef ALSA_SUPPORT
 #include <alsa/asoundlib.h>
 #endif
 
-//#define RTMDI_SUPPORT
 
-#ifdef RTMDI_SUPPORT
+#ifdef RTMIDI_SUPPORT
 #include "RtMidi.h"
 
 const unsigned char  EVENT_STATUS_BIT       = 0x80;
@@ -51,7 +49,7 @@ const unsigned char  EVENT_CHANNEL          = 0x0F;
 
 const unsigned char  MIDINOTEON             = 144;
 const unsigned char  MIDINOTEOFF            = 128;
-#endif  // RTMDI_SUPPORT
+#endif  // RTMIDI_SUPPORT
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
@@ -144,7 +142,7 @@ private:
     void cb_channel_callback(Fl_Spinner*);
     static void channel_callback(Fl_Spinner*, void*);
     
-#ifdef RTMDI_SUPPORT
+#ifdef RTMIDI_SUPPORT
     RtMidiIn  *m_midiIn;
     RtMidiOut *m_midiOut;
     std::vector<unsigned char> m_message;
@@ -186,7 +184,7 @@ public:
 
     void marker(int x, int y);
     
-#ifdef RTMDI_SUPPORT
+#ifdef RTMIDI_SUPPORT
     void playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes);
     static void rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
 #endif

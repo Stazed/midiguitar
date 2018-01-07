@@ -44,7 +44,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_last_focus_fret(-1),
     m_midi_out_channel(a_channel),
     m_midi_in_channel(0)
-#ifdef RTMDI_SUPPORT
+#ifdef RTMIDI_SUPPORT
     ,m_midiIn(0)
     ,m_midiOut(0)
 #endif
@@ -264,7 +264,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     snd_seq_nonblock(mHandle, 1);
 #endif  // ALSA_SUPPORT
     
-#ifdef RTMDI_SUPPORT
+#ifdef RTMIDI_SUPPORT
     // TODO take care of fail
     if(init_rt_midi_out())
         m_midiOut->openVirtualPort("Output");
@@ -284,14 +284,14 @@ Guitar::~Guitar()
     snd_seq_close(mHandle);
 #endif
     
-#ifdef RTMDI_SUPPORT
+#ifdef RTMIDI_SUPPORT
     delete m_midiIn;
     delete m_midiOut;
 #endif
     //dtor
 }
 
-#ifdef RTMDI_SUPPORT
+#ifdef RTMIDI_SUPPORT
 
 void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes)
 {
@@ -405,7 +405,7 @@ void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = O
     m_midiOut->sendMessage(&m_message);
 }
 
-#endif // RTMDI_SUPPORT
+#endif // RTMIDI_SUPPORT
 
 float Guitar::fret_distance(int num_fret)
 {
@@ -687,7 +687,7 @@ void Guitar::cb_fret_callback(Fret* b)
                 snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], 127);
 #endif
                 
-#ifdef RTMDI_SUPPORT
+#ifdef RTMIDI_SUPPORT
                 sendMidiNote(m_note_array[string][nfret], true);
 #endif
             } else // note off - clear text & set midi note off
@@ -701,7 +701,7 @@ void Guitar::cb_fret_callback(Fret* b)
                 snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, m_note_array[string][nfret], 64);
 #endif
                 
-#ifdef RTMDI_SUPPORT
+#ifdef RTMIDI_SUPPORT
                 sendMidiNote(m_note_array[string][nfret], false);
 #endif
             }
