@@ -2,7 +2,11 @@ midiguitar README
 -----------------
 
 Midiguitar is a midi player and generator similar to virtual piano keyboards, but for a guitar.
-It requires Alsa and the Fltk libraries.
+The default build uses RtMidi classes which are included.
+There is also a legacy Alsa build. This can be enabled with ./configure --enable-alsa
+The RtMidi build can be disabled with ./configure --disable-rtmidi
+
+Requires fltk, jack, alsa libraries.
 
 How to install?
 

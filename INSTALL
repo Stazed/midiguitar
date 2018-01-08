@@ -12,3 +12,11 @@ UNINSTALLING
 For uninstalling, run:
 # make uninstall
 from the top folder of this package
+
+Build options: 
+RtMidi is the default build and will select between jack then alsa depending on what is available.
+$./configure --disable-rtmidi
+
+Legacy alsa build using alsa only.
+$./configure --enable-alsa
+
