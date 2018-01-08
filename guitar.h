@@ -55,6 +55,9 @@ const unsigned char  MIDINOTEOFF            = 128;
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
 
+const unsigned char  NOTEONVELOCITY         = 127;
+const unsigned char  NOTEOFFVELOCITY        = 64;
+
 /*  example of SSTR
 int i = 42;
 std::cout << SSTR( "i is: " << i );

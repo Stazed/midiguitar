@@ -371,10 +371,7 @@ bool Guitar::init_rt_midi_in()
 
     if (nPorts == 0)
     {
-        std::cout << "No ports available!\n";
         return false;
- //       delete midiinJack;
- //       exit( EXIT_FAILURE );
     }
     return true;
 }
@@ -389,8 +386,7 @@ bool Guitar::init_rt_midi_out()
     }
     catch ( RtMidiError &error )
     {
-       error.printMessage();
-      //exit( EXIT_FAILURE );
+        error.printMessage();
         return false;
     }
     return true;
@@ -398,7 +394,7 @@ bool Guitar::init_rt_midi_out()
 
 void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = ON, false = Off
 {
-    uint velocity = 127;    // default for note on
+    unsigned char velocity = NOTEONVELOCITY;
     m_message.clear();
     
     if(OnorOff)
@@ -407,7 +403,7 @@ void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = O
     }else
     {
         m_message.push_back(MIDINOTEOFF + m_midi_out_channel);       // status note Off
-        velocity = 64;
+        velocity = NOTEOFFVELOCITY;
     }
     
     m_message.push_back(note);
@@ -695,7 +691,7 @@ void Guitar::cb_fret_callback(Fret* b)
             {
                 fret[i]->copy_label(c_key_table_text[text_array]);
 #ifdef ALSA_SUPPORT
-                snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], 127);
+                snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], NOTEONVELOCITY);
 #endif
                 
 #ifdef RTMIDI_SUPPORT
@@ -709,7 +705,7 @@ void Guitar::cb_fret_callback(Fret* b)
 
                 fret[i]->copy_label(label.c_str());
 #ifdef ALSA_SUPPORT
-                snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, m_note_array[string][nfret], 64);
+                snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, m_note_array[string][nfret], NOTEOFFVELOCITY);
 #endif
                 
 #ifdef RTMIDI_SUPPORT
