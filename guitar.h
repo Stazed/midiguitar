@@ -136,7 +136,7 @@ private:
     void cb_spin_callback(Fl_Spinner*);
     static void spin_callback(Fl_Spinner*, void*);
 
-    void cb_reset_callback(Fl_Button*);
+    void cb_reset_callback(void* Gptr);
     static void reset_callback(Fl_Button*, void*);
 
     void cb_control_callback(Fl_Button*);
@@ -173,7 +173,6 @@ private:
 
     bool m_have_string_toggle;
     bool m_last_fret;
-    bool m_bReset;
     bool m_bcontrol;
     uint m_guitar_type;
     uint m_guitar_string_param;

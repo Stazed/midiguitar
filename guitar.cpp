@@ -36,7 +36,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_client_name(name),
     m_have_string_toggle(false),
     m_last_fret(false),
-    m_bReset(false),
     m_bcontrol(true),
     m_guitar_type(a_type),
     m_guitar_string_param(a_CC),
@@ -486,14 +485,10 @@ void Guitar::reset_all_controls()
         fretToggle(i, false);
 
     m_have_string_toggle = false;
-    m_bReset = false;
 }
 
 void Guitar::Timeout(void)
 {
-    if (m_bReset)
-        Guitar::reset_all_controls();
-    
     /* Fret mouse click or drag */
     triggerFretNotes();
     
@@ -652,14 +647,14 @@ void Guitar::spin_callback(Fl_Spinner* o, void* data)
     ((Guitar*) data)->cb_spin_callback(o);
 }
 
-void Guitar::cb_reset_callback(Fl_Button*)
+void Guitar::cb_reset_callback(void* Gptr )
 {
-    m_bReset = true;
+    ((Guitar*)Gptr)->reset_all_controls();
 }
 
 void Guitar::reset_callback(Fl_Button* o, void* data)
 {
-    ((Guitar*) data)->cb_reset_callback(o);
+    ((Guitar*) data)->cb_reset_callback(data);
 }
 
 void Guitar::cb_control_callback(Fl_Button *b)
