@@ -269,14 +269,21 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
 #endif  // ALSA_SUPPORT
     
 #ifdef RTMIDI_SUPPORT
-    // TODO take care of fail
     if(init_rt_midi_out())
+    {
         m_midiOut->openVirtualPort("Output");
+    }else   // not gonna worry about exit - we just won't have port
+    {
+        fl_alert("Error creating RtMidi out port.\n");
+    } 
     
     if(init_rt_midi_in())
     {
         m_midiIn->openVirtualPort("Input");
         m_midiIn->setCallback(rtMidiCallback, (void*)this);
+    }else   // not gonna worry about exit - we just won't have port
+    {
+        fl_alert("Error creating RtMidi in port.\n");
     }
 #endif
     //ctor
