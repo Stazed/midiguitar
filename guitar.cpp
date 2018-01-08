@@ -320,10 +320,10 @@ void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int 
     
     /* For Notes & CC we compare with EVENT_CLEAR_CHAN_MASK because we do not 
      want to iterate through 16 different items do to the channel bit. So we
-     mask it off to compare to the single generic note or CC*/
+     mask it off to compare to the single generic note or CC.
+     User is 1 to 16, we are 0 to 15 (= -1). Channel 0 (user) means all channels*/
     
-    if(channel == m_midi_in_channel - 1 || m_midi_in_channel == 0 ||
-            channel == m_midi_in_channel - 1)
+    if(channel == m_midi_in_channel - 1 || m_midi_in_channel == 0)
     {
         if (((status & EVENT_CLEAR_CHAN_MASK) == EVENT_CONTROL_CHANGE) &&
             (parameter == m_guitar_string_param) &&
