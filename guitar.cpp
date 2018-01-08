@@ -414,35 +414,9 @@ void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = O
 
 #endif // RTMIDI_SUPPORT
 
-float Guitar::fret_distance(int num_fret)
-{
-    return 20 - (20 / (pow(2.0, (num_fret / 12.0))));
-}
-
-void Guitar::marker(int x, int y)
-{
-    Fl_Text_Display* o = new Fl_Text_Display(x, y, 0, 0, ".");
-    o->box(FL_UP_FRAME);
-    o->labelfont(9);
-    o->labelsize(60);
-}
-
-void Guitar::reset_all_controls()
-{
-    for (int i = 0; i < 6; i++)
-        gtString[i]->value(1);
-    for (int i = 0; i < 127; i++)
-        fretToggle(i, false);
-
-    m_have_string_toggle = false;
-    m_bReset = false;
-}
-
-void Guitar::Timeout(void)
-{
-    if (m_bReset)
-        Guitar::reset_all_controls();
 #ifdef ALSA_SUPPORT
+void Guitar::alsaGetMidiMessages()
+{
     /* For MIDI incoming messages */
     snd_seq_event_t *ev;
     do
@@ -488,8 +462,51 @@ void Guitar::Timeout(void)
 
         }
     } while (ev);
-#endif  // ALSA_SUPPORT
+}
+#endif // ALSA_SUPPORT
 
+float Guitar::fret_distance(int num_fret)
+{
+    return 20 - (20 / (pow(2.0, (num_fret / 12.0))));
+}
+
+void Guitar::marker(int x, int y)
+{
+    Fl_Text_Display* o = new Fl_Text_Display(x, y, 0, 0, ".");
+    o->box(FL_UP_FRAME);
+    o->labelfont(9);
+    o->labelsize(60);
+}
+
+void Guitar::reset_all_controls()
+{
+    for (int i = 0; i < 6; i++)
+        gtString[i]->value(1);
+    for (int i = 0; i < 127; i++)
+        fretToggle(i, false);
+
+    m_have_string_toggle = false;
+    m_bReset = false;
+}
+
+void Guitar::Timeout(void)
+{
+    if (m_bReset)
+        Guitar::reset_all_controls();
+    
+    /* Fret mouse click or drag */
+    triggerFretNotes();
+    
+#ifdef ALSA_SUPPORT
+    /* Alsa midi incoming messages */
+    alsaGetMidiMessages();
+#endif
+
+    Fl::add_timeout(0.01, Guitar::TimeoutStatic, this);
+}
+
+void Guitar::triggerFretNotes()
+{
     /* For MIDI sending messages */
     if (Fl::event_button1() && Fl::event() == FL_DRAG)
     {
@@ -505,7 +522,7 @@ void Guitar::Timeout(void)
         {
             if (Fl::event_inside(fret[m_last_focus_fret]))
             {
-                goto jump; // Egads!, a goto -  if still inside previous fret then don't change
+                return; // if still inside previous fret then don't change
             } else
             {
                 fret[m_last_focus_fret]->value(0); // moved outside of fret so shut it off
@@ -527,11 +544,7 @@ void Guitar::Timeout(void)
         fret[m_last_focus_fret]->value(0); // then shut off the last fret we played
         cb_fret_callback(fret[m_last_focus_fret]);
         m_last_focus_fret = -1;
-    }
-
-jump: // yes this is a GOTO!!!!!
-
-    Fl::add_timeout(0.01, Guitar::TimeoutStatic, this);
+    }                                   
 }
 
 void Guitar::stringToggle(int gString)

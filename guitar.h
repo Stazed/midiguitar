@@ -52,11 +52,11 @@ const unsigned char  MIDINOTEON             = 144;
 const unsigned char  MIDINOTEOFF            = 128;
 #endif  // RTMIDI_SUPPORT
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >( \
-        ( std::ostringstream() << std::dec << x ) ).str()
-
 const unsigned char  NOTEONVELOCITY         = 127;
 const unsigned char  NOTEOFFVELOCITY        = 64;
+
+#define SSTR( x ) dynamic_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
 
 /*  example of SSTR
 int i = 42;
@@ -164,6 +164,7 @@ private:
 
     snd_seq_t* mHandle;             // handle and client for system notification events
     snd_seq_event_t m_ev;           // for sending from fret mouse press
+    void alsaGetMidiMessages();     // used in Timeout() for polling alsa midi
 #endif
     std::string m_client_name;
 
@@ -205,6 +206,7 @@ public:
     }
 
     void Timeout(void);
+    void triggerFretNotes();
 
     void stringToggle(int gString);
 
