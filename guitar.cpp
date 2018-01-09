@@ -227,6 +227,9 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     
     m_windowLabel += PACKAGE_VERSION;
     Guitar::label(m_windowLabel.c_str());
+    
+    for (int i = 0; i < 6; i++)
+        storeFretLocation[i] = -1; // initialize the array
 
 #ifdef ALSA_SUPPORT
     mHandle = 0;
