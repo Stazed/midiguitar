@@ -110,44 +110,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         n++;
     }
 
-    n = 0; // reset and reuse
-
-    Fl_Group* g = new Fl_Group(47, c_global_fret_height + 72, 965, 126);
-    g->box(FL_ENGRAVED_BOX);
-
-    for (int y = 0; y < 6; y++)
-    {
-        Fret* b = new Fret(50, (y + 1) * c_global_fret_height + (y >= 6 ? 12 * 40 : 75), 45, c_global_fret_height, "Open");
-        b->color(FL_YELLOW);
-        b->color2(FL_RED);
-        b->when(FL_WHEN_CHANGED);
-        b->align(FL_ALIGN_CLIP);
-        b->callback((Fl_Callback*) fret_callback, this);
-        fret[n] = b;
-        g->add(b);
-        n++;
-        for (int x = 0; x < 24; x++) // The actual frets
-        {
-            float distance1 = Guitar::fret_distance(x);
-            float distance2 = Guitar::fret_distance(x + 1);
-
-            float fret_W = distance2 - distance1;
-            Fret* b = new Fret((distance1 * c_global_pixel_scale) + 95,
-                               (y + 1) * c_global_fret_height + (y >= 6 ? 12 * 40 : 75),
-                               fret_W*c_global_pixel_scale, c_global_fret_height);
-            b->color((Fl_Color) 18);
-            b->color2(FL_RED);
-            b->when(FL_WHEN_CHANGED);
-            b->align(FL_ALIGN_CLIP);
-            b->labelsize(10);
-            b->callback((Fl_Callback*) fret_callback, this);
-            fret[n] = b;
-            g->add(b);
-            n++;
-        }
-    }
-
-    int y = 98;
 
     char note_string[] = "EBGDAE";
     char note_Reverse[] = "EADGBE";
@@ -174,25 +136,28 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             }
         }
     }
-
+    
+    /* Guitar string toggle buttons */
+    int y = 98;
     for (int i = 0; i < 6; i++)
     {
-        Fl_Button* o = new Fl_Button(30, y, 15, 15);
-        o->box(FL_ROUND_UP_BOX);
-        o->color(FL_GREEN);
+        gtString[i] = new Fl_Button(30, y, 15, 15);
+        gtString[i]->color(FL_BLACK);
         char temp[2] = {};
         temp[0] = note_string[i];
-        o->copy_label(temp);
-        o->selection_color(FL_BLACK);
-        o->align(Fl_Align(FL_ALIGN_LEFT));
-        gtString[i] = o;
+        gtString[i]->copy_label(temp);
+//        gtString[i]->when(FL_WHEN_CHANGED);
+        gtString[i]->selection_color(FL_GREEN);
+        gtString[i]->align(Fl_Align(FL_ALIGN_LEFT));
+        gtString[i]->callback((Fl_Callback*) string_callback, this);
         y += c_global_fret_height;
     }
-
+    
+   /* String number labels*/
     y = 100;
     for (int i = 0; i < 6; i++)
     {
-        Fl_Button* o = new Fl_Button(17, y, 15, 15);
+        Fl_Text_Display* o = new Fl_Text_Display(17, y, 15, 15);
         o->box(FL_NO_BOX);
         o->labelsize(9);
 
@@ -207,6 +172,44 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         o->align(Fl_Align(FL_ALIGN_LEFT));
         y += c_global_fret_height;
     }
+  
+    n = 0; // reset and reuse
+
+    /* Guitar Fret Board */
+    Fl_Group* g = new Fl_Group(47, c_global_fret_height + 72, 965, 126);
+    g->box(FL_ENGRAVED_BOX);
+    {
+        for (int y = 0; y < 6; y++)
+        {
+            fret[n] = new Fret(50, (y + 1) * c_global_fret_height + (y >= 6 ? 12 * 40 : 75), 45, c_global_fret_height, "Open");
+            fret[n]->color(FL_YELLOW);
+            fret[n]->selection_color(FL_RED);
+            fret[n]->when(FL_WHEN_CHANGED);
+            fret[n]->align(FL_ALIGN_CLIP);
+            fret[n]->callback((Fl_Callback*) fret_callback, this);
+            g->add(fret[n]);
+            n++;
+            for (int x = 0; x < 24; x++) // The actual frets
+            {
+                float distance1 = Guitar::fret_distance(x);
+                float distance2 = Guitar::fret_distance(x + 1);
+
+                float fret_W = distance2 - distance1;
+                fret[n] = new Fret((distance1 * c_global_pixel_scale) + 95,
+                                   (y + 1) * c_global_fret_height + (y >= 6 ? 12 * 40 : 75),
+                                   fret_W*c_global_pixel_scale, c_global_fret_height);
+                fret[n]->color((Fl_Color) 18);
+                fret[n]->selection_color(FL_RED);
+                fret[n]->when(FL_WHEN_CHANGED);
+                fret[n]->align(FL_ALIGN_CLIP);
+                fret[n]->labelsize(10);
+                fret[n]->callback((Fl_Callback*) fret_callback, this);
+                g->add(fret[n]);
+                n++;
+            }
+        }
+    }
+
 
     Guitar::marker(260, 250);
     Guitar::marker(372, 250);
@@ -221,12 +224,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
 
     this->size_range(1020, 280, 0, 0, 0, 0, 1); // sets minimum & the 1 = scalable
     this->resizable(this);
-    
-    for (int i = 0; i < 6; i++)
-    {
-        stringToggle(i);
-        storeFretLocation[i] = -1;
-    }
     
     m_windowLabel += PACKAGE_VERSION;
     Guitar::label(m_windowLabel.c_str());
@@ -480,7 +477,7 @@ void Guitar::marker(int x, int y)
 void Guitar::reset_all_controls()
 {
     for (int i = 0; i < 6; i++)
-        gtString[i]->value(1);
+        gtString[i]->value(0);
     for (int i = 0; i < 127; i++)
         fretToggle(i, false);
 
@@ -544,11 +541,16 @@ void Guitar::triggerFretNotes()
 
 void Guitar::stringToggle(int gString)
 {
-    //printf("gstring %d\n",gString);
-    if (gtString[gString]->value() == 1)
+//    printf("gstring %d: value %d\n",gString, gtString[gString]->value());
+/*    if (gtString[gString]->value() == 1)
+    {
         gtString[gString]->value(0);
+    }
     else
         gtString[gString]->value(1);
+*/
+    cb_string_callback(gtString[gString]);
+//    printf("gString after ptr = %p\n",gtString[gString]);
 }
 
 void Guitar::fretToggle(uint note, bool on_off)
@@ -581,11 +583,16 @@ void Guitar::fretToggle(uint note, bool on_off)
                 {
                     if (m_have_string_toggle) // user supplied CC for string
                     {
-                        if (gtString[I]->value() == 0) // if the string is on and...
+                        if (gtString[I]->value() == 1) // if the string is on and...
                         {
                             toggle_fret((I * 25) + J, on_off);
+                            
+                            if (m_guitar_type == 0)
+                                stringToggle(I); 
+                            else
+                                stringToggle(5 - I);
 
-                            stringToggle(I); // shut off string after we get it
+                            //stringToggle(I); // shut off string after we get it
                             m_have_string_toggle = false; // shut off flag for string toggle
                             m_last_used_fret = (I * 25) + J; // save the fret location
                             m_last_fret = true; // set this so we know to use it next time
@@ -772,6 +779,22 @@ void Guitar::channel_callback(Fl_Spinner* o, void* data)
 {
     ((Guitar*) data)->cb_channel_callback(o);
 }
+
+void Guitar::cb_string_callback(Fl_Button* o)
+{
+    if (o->value() == 1)
+    {
+        o->value(0);
+    }
+    else
+        o->value(1);
+}
+
+void Guitar::string_callback(Fl_Button* o, void* data)
+{
+    ((Guitar*) data)->cb_string_callback(o);
+}
+
 
 int Guitar::get_fret_center(uint x_or_y, uint h_or_w)
 {

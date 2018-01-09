@@ -128,8 +128,8 @@ class Guitar : public Fl_Double_Window
 {
 private:
 
-    Fl_Button *gtString[7];
-    Fret *fret[151];
+    Fl_Button *gtString[7] = {NULL};
+    Fret *fret[151] = {NULL};
     
     std::string m_windowLabel;
 
@@ -147,6 +147,10 @@ private:
 
     void cb_channel_callback(Fl_Spinner*);
     static void channel_callback(Fl_Spinner*, void*);
+    
+    void cb_string_callback(Fl_Button*);
+    static void string_callback(Fl_Button*, void*);
+    
     
 #ifdef RTMIDI_SUPPORT
     RtMidiIn  *m_midiIn;
