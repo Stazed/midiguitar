@@ -112,13 +112,9 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
 
 
     char note_string[] = "EBGDAE";
-    char note_Reverse[] = "EADGBE";
 
     if (m_guitar_type == 1 || m_guitar_type == 3)
     {
-        for (int i = 0; i < 6; i++)
-            note_string[i] = note_Reverse[i];
-
         for (int i = 5; i >= 0; i--)
         {
             for (int j = 0; j < 25; j++)
@@ -141,15 +137,19 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     int y = 98;
     for (int i = 0; i < 6; i++)
     {
-        gtString[i] = new Fl_Button(30, y, 15, 15);
-        gtString[i]->color(FL_BLACK);
+        int j = i;
+        if (m_guitar_type == 1 || m_guitar_type == 3)
+        {
+            j = 5 - j;
+        }
+        gtString[j] = new Fl_Button(30, y, 15, 15);
+        gtString[j]->color(FL_BLACK);
         char temp[2] = {};
-        temp[0] = note_string[i];
-        gtString[i]->copy_label(temp);
-//        gtString[i]->when(FL_WHEN_CHANGED);
-        gtString[i]->selection_color(FL_GREEN);
-        gtString[i]->align(Fl_Align(FL_ALIGN_LEFT));
-        gtString[i]->callback((Fl_Callback*) string_callback, this);
+        temp[0] = note_string[j];
+        gtString[j]->copy_label(temp);
+        gtString[j]->selection_color(FL_GREEN);
+        gtString[j]->align(Fl_Align(FL_ALIGN_LEFT));
+        gtString[j]->callback((Fl_Callback*) string_callback, this);
         y += c_global_fret_height;
     }
     
@@ -328,14 +328,9 @@ void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int 
             (parameter == m_guitar_string_param) &&
             (m_bcontrol == true))
         {
-            if (value >= 1 && value <= 6)       // must do or it gets sent to random key pointer
+            if (value >= 1 && value <= 6)   // must do or it gets sent to random key pointer
             {
-                m_have_string_toggle = true;
-                m_last_fret = false;
-                if (m_guitar_type == 0)
-                    stringToggle(value - 1);    // we use 0 to 5, but user is 1 to 6
-                else
-                    stringToggle(5 - (value - 1));
+                stringToggle(value - 1);    // we use 0 to 5, but user is 1 to 6
             }
         }
               
@@ -437,10 +432,7 @@ void Guitar::alsaGetMidiMessages()
                     {
                         m_have_string_toggle = true;
                         m_last_fret = false;
-                        if (m_guitar_type == 0)
-                            stringToggle(ev->data.control.value - 1); // we use 0 to 5, but user is 1 to 6
-                        else
-                            stringToggle(5 - (ev->data.control.value - 1));
+                        stringToggle(ev->data.control.value - 1); // we use 0 to 5, but user is 1 to 6
                     }
                 }
 
@@ -544,16 +536,7 @@ void Guitar::triggerFretNotes()
 
 void Guitar::stringToggle(int gString)
 {
-//    printf("gstring %d: value %d\n",gString, gtString[gString]->value());
-/*    if (gtString[gString]->value() == 1)
-    {
-        gtString[gString]->value(0);
-    }
-    else
-        gtString[gString]->value(1);
-*/
     cb_string_callback(gtString[gString]);
-//    printf("gString after ptr = %p\n",gtString[gString]);
 }
 
 void Guitar::fretToggle(uint note, bool on_off)
@@ -589,13 +572,8 @@ void Guitar::fretToggle(uint note, bool on_off)
                         if (gtString[I]->value() == 1) // if the string is on and...
                         {
                             toggle_fret((I * 25) + J, on_off);
+                            stringToggle(I); // shut off string after we get it
                             
-                            if (m_guitar_type == 0)
-                                stringToggle(I); 
-                            else
-                                stringToggle(5 - I);
-
-                            //stringToggle(I); // shut off string after we get it
                             m_have_string_toggle = false; // shut off flag for string toggle
                             m_last_used_fret = (I * 25) + J; // save the fret location
                             m_last_fret = true; // set this so we know to use it next time
@@ -785,6 +763,8 @@ void Guitar::channel_callback(Fl_Spinner* o, void* data)
 
 void Guitar::cb_string_callback(Fl_Button* o)
 {
+    m_have_string_toggle = true;
+    m_last_fret = false;
     if (o->value() == 1)
     {
         o->value(0);
