@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     
     MidiGuitar->show();
 
-    Fl::add_timeout(1.0,Guitar::TimeoutStatic,MidiGuitar);
+    Fl::add_timeout(0.1,Guitar::TimeoutStatic,MidiGuitar);
 
     return Fl::run();
 }

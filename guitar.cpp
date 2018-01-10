@@ -497,7 +497,7 @@ void Guitar::Timeout(void)
     alsaGetMidiMessages();
 #endif
 
-    Fl::add_timeout(0.01, Guitar::TimeoutStatic, this);
+    Fl::repeat_timeout(0.005, Guitar::TimeoutStatic, this);
 }
 
 void Guitar::triggerFretNotes()
