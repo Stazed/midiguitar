@@ -137,9 +137,9 @@ public:
 class Guitar : public Fl_Double_Window
 {
 private:
-
-    Fl_Button *gtString[7];
-    Fret *fret[151];
+    
+    Fl_Button       *gtString[7];
+    Fret            *fret[151];
     
     std::string m_windowLabel;
 

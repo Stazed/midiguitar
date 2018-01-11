@@ -51,15 +51,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         
 {
     {
-        Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Transpose");
-        o->minimum(-12);
-        o->maximum(12);
-        o->tooltip("Selected value will adjust incoming midi note up or down.");
-        o->value(m_transpose);
-        o->align(Fl_Align(FL_ALIGN_TOP));
-        o->callback((Fl_Callback*) spin_callback, this);
-    } // Fl_Spinner* o
-    {
         Fl_Button* o = new Fl_Button(60, 15, 70, 45, "Reset");
         o->tooltip("Press button to clear all CC values and previous note calculation.\n"
                    "Also, note OFF will be sent to all fret locations.");
@@ -67,27 +58,41 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         o->selection_color((Fl_Color) 135);
         o->callback((Fl_Callback*) reset_callback, this);
     } // Fl_Button* o
-    {
-        Fl_Button* o = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
-        o->type(1);
-        o->tooltip("Press button to stop program calculation of nearest fret.\n"
-                   "If pressed all possible note locations will be triggered.");
-        o->color(FL_GREEN);
-        o->selection_color(FL_FOREGROUND_COLOR);
-        o->callback((Fl_Callback*) control_callback, this);
-    } // Fl_Button* o
-
-    {
-        Fl_Spinner* s = new Fl_Spinner(350, 30, 40, 25, "Midi Channel");
-        s->minimum(0);
-        s->maximum(16);
-        s->tooltip("Enter the midi channel to receive input.\n"
-                   "Zero '0' means all channels.");
-        s->value(m_midi_in_channel);
-        s->align(Fl_Align(FL_ALIGN_TOP));
-        s->callback((Fl_Callback*) channel_callback, this);
-    } // Fl_Spinner* o
-
+    
+    {Fl_Group* midi_in_group = new Fl_Group(145, 13, 290, 51, "Midi In");
+        midi_in_group->labelsize(10);
+        midi_in_group->box(FL_ENGRAVED_BOX);
+        {
+            Fl_Button* o = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
+            o->type(1);
+            o->tooltip("Press to stop calculation of nearest fret.\n"
+                       "If pressed all possible note locations will be triggered.");
+            o->color(FL_GREEN);
+            o->selection_color(FL_FOREGROUND_COLOR);
+            o->callback((Fl_Callback*) control_callback, this);
+        } // Fl_Button* o
+        {
+            Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Transpose");
+            o->minimum(-12);
+            o->maximum(12);
+            o->tooltip("Selected value will adjust incoming midi note up or down.");
+            o->value(m_transpose);
+            o->align(Fl_Align(FL_ALIGN_TOP));
+            o->callback((Fl_Callback*) spin_callback, this);
+        } // Fl_Spinner* o
+        {
+            Fl_Spinner* s = new Fl_Spinner(350, 30, 40, 25, "Midi Channel");
+            s->minimum(0);
+            s->maximum(16);
+            s->tooltip("Enter the midi channel to receive input.\n"
+                       "Zero '0' means all channels.");
+            s->value(m_midi_in_channel);
+            s->align(Fl_Align(FL_ALIGN_TOP));
+            s->callback((Fl_Callback*) channel_callback, this);
+        } // Fl_Spinner* o
+        midi_in_group->end();   // Must remember to do this or everything after group declaration is included!
+        Fl_Group::current()->resizable(midi_in_group);
+    }
     int n = 0;
 
     {
@@ -111,8 +116,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     }
 
 
-    char note_string[] = "EBGDAE";
-
     if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
     {
         for (int i = 5; i >= 0; i--)
@@ -134,6 +137,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     }
     
     /* Guitar string toggle buttons */
+    char note_string[] = "EBGDAE";
     int y = 98;
     for (int i = 0; i < 6; i++)
     {
@@ -176,8 +180,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     n = 0; // reset and reuse
 
     /* Guitar Fret Board */
-    Fl_Group* g = new Fl_Group(47, c_global_fret_height + 72, 965, 126);
-    g->box(FL_ENGRAVED_BOX);
+    Fl_Group* guitar_frets = new Fl_Group(47, c_global_fret_height + 72, 965, 126);
+    guitar_frets->box(FL_ENGRAVED_BOX);
     {
         for (int y = 0; y < 6; y++)
         {
@@ -187,7 +191,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             fret[n]->when(FL_WHEN_CHANGED);
             fret[n]->align(FL_ALIGN_CLIP);
             fret[n]->callback((Fl_Callback*) fret_callback, this);
-            g->add(fret[n]);
+            guitar_frets->add(fret[n]);
             n++;
             for (int x = 0; x < 24; x++) // The actual frets
             {
@@ -204,12 +208,12 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
                 fret[n]->align(FL_ALIGN_CLIP);
                 fret[n]->labelsize(10);
                 fret[n]->callback((Fl_Callback*) fret_callback, this);
-                g->add(fret[n]);
+                guitar_frets->add(fret[n]);
                 n++;
             }
         }
     }
-
+    guitar_frets->end();    // Must remember to do this or everything after group declaration is included!
 
     Guitar::marker(260, 250);
     Guitar::marker(372, 250);
@@ -221,7 +225,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     Guitar::marker(844, 250);
     Guitar::marker(895, 250);
     Guitar::marker(941, 250);
-
+    
     this->size_range(1020, 280, 0, 0, 0, 0, 1); // sets minimum & the 1 = scalable
     this->resizable(this);
     
