@@ -48,15 +48,24 @@ const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;
 const unsigned char  EVENT_CLEAR_CHAN_MASK  = 0xF0;
 const unsigned char  EVENT_CHANNEL          = 0x0F;
 
-const unsigned char  MIDINOTEON             = 144;
-const unsigned char  MIDINOTEOFF            = 128;
+const unsigned char  MIDI_NOTE_ON             = 144;
+const unsigned char  MIDI_NOTE_OFF            = 128;
 #endif  // RTMIDI_SUPPORT
 
-const unsigned char  NOTEONVELOCITY         = 127;
-const unsigned char  NOTEOFFVELOCITY        = 64;
+const unsigned char  NOTE_ON_VELOCITY         = 127;
+const unsigned char  NOTE_OFF_VELOCITY        = 64;
+const int            NO_FRET                  = -1;
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
+
+
+enum{
+    RH_STANDARD_GUITAR,
+    RH_MIRROR_GUITAR,
+    LH_STANDARD_GUITAR,
+    LH_MIRROR_GUITAR
+};
 
 /*  example of SSTR
 int i = 42;

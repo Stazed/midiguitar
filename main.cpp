@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 {
     std::string client_name = "MIDI_Guitar";
     uint guitar_string_param = 16;
-    uint guitar_type = 0;
+    uint guitar_type = RH_STANDARD_GUITAR;
     uint midi_channel = 0;
     
     /* parse parameters */
@@ -78,9 +78,12 @@ int main(int argc, char **argv)
             break;
 
         case 't':
-            if (atoi( optarg ) > 0)
+            if (atoi(optarg) >= RH_STANDARD_GUITAR && atoi(optarg) <= RH_MIRROR_GUITAR)
             {
                 guitar_type = (atoi( optarg ));
+            }else
+            {
+                printf("Invalid Guitar type %d indicated! Using standard type 0\n", atoi(optarg));
             }
             break;
 

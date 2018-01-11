@@ -40,8 +40,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_guitar_type(a_type),
     m_guitar_string_param(a_CC),
     m_transpose(0),
-    m_last_used_fret(-1),
-    m_last_focus_fret(-1),
+    m_last_used_fret(NO_FRET),
+    m_last_focus_fret(NO_FRET),
     m_midi_out_channel(a_channel),
     m_midi_in_channel(0)
 #ifdef RTMIDI_SUPPORT
@@ -113,7 +113,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
 
     char note_string[] = "EBGDAE";
 
-    if (m_guitar_type == 1 || m_guitar_type == 3)
+    if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
     {
         for (int i = 5; i >= 0; i--)
         {
@@ -138,7 +138,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     for (int i = 0; i < 6; i++)
     {
         int j = i;
-        if (m_guitar_type == 1 || m_guitar_type == 3)
+        if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
         {
             j = 5 - j;
         }
@@ -162,7 +162,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         o->labelsize(9);
 
         int label = i + 1;
-        if (m_guitar_type == 1 || m_guitar_type == 3)
+        if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
         {
             label = 7 - label;
         }
@@ -388,16 +388,16 @@ bool Guitar::init_rt_midi_out()
 
 void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = ON, false = Off
 {
-    unsigned char velocity = NOTEONVELOCITY;
+    unsigned char velocity = NOTE_ON_VELOCITY;
     m_message.clear();
     
     if(OnorOff)
     {
-        m_message.push_back(MIDINOTEON + m_midi_out_channel);       // status note ON
+        m_message.push_back(MIDI_NOTE_ON + m_midi_out_channel);       // status note ON
     }else
     {
-        m_message.push_back(MIDINOTEOFF + m_midi_out_channel);       // status note Off
-        velocity = NOTEOFFVELOCITY;
+        m_message.push_back(MIDI_NOTE_OFF + m_midi_out_channel);       // status note Off
+        velocity = NOTE_OFF_VELOCITY;
     }
     
     m_message.push_back(note);
@@ -497,7 +497,7 @@ void Guitar::triggerFretNotes()
     /* For MIDI sending messages */
     if (Fl::event_button1() && Fl::event() == FL_DRAG)
     {
-        if (m_last_focus_fret == -1)
+        if (m_last_focus_fret == NO_FRET)
         {
             Fret * f = get_drag_fret();
             if (f != NULL)
@@ -522,15 +522,15 @@ void Guitar::triggerFretNotes()
                 f->value(1);
                 cb_fret_callback(f);
             } else
-                m_last_focus_fret = -1; // did not find a fret (moved off fretboard) so clear last
+                m_last_focus_fret = NO_FRET; // did not find a fret (moved off fretboard) so clear last
         }
     }
 
-    if (m_last_focus_fret != -1 && !Fl::event_button1()) // if released left mouse button
+    if (m_last_focus_fret != NO_FRET && !Fl::event_button1()) // if released left mouse button
     {
         fret[m_last_focus_fret]->value(0); // then shut off the last fret we played
         cb_fret_callback(fret[m_last_focus_fret]);
-        m_last_focus_fret = -1;
+        m_last_focus_fret = NO_FRET;
     }                                   
 }
 
@@ -605,7 +605,7 @@ void Guitar::toggle_fret(int location, bool on_off)
     int string = location / 25;
     int nfret = location % 25;
 
-    if (m_guitar_type == 1)
+    if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
         string = (5 - string) * 25;
     else
         string *= 25;
@@ -651,7 +651,7 @@ void Guitar::cb_control_callback(Fl_Button *b)
     {
         m_bcontrol = false;
         m_last_fret = false;
-        m_last_used_fret = -1;
+        m_last_used_fret = NO_FRET;
     } else
     {
         m_bcontrol = true;
@@ -675,7 +675,7 @@ void Guitar::cb_fret_callback(Fret* b)
             int nfret = i % 25;
             int text_array = (string * 25) + nfret;
 
-            if (m_guitar_type == 1)
+            if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
             {
                 string = (5 - string);
                 text_array = (string * 25) + nfret;
@@ -687,7 +687,7 @@ void Guitar::cb_fret_callback(Fret* b)
             {
                 fret[i]->copy_label(c_key_table_text[text_array]);
 #ifdef ALSA_SUPPORT
-                snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], NOTEONVELOCITY);
+                snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], NOTE_ON_VELOCITY);
 #endif
                 
 #ifdef RTMIDI_SUPPORT
@@ -701,7 +701,7 @@ void Guitar::cb_fret_callback(Fret* b)
 
                 fret[i]->copy_label(label.c_str());
 #ifdef ALSA_SUPPORT
-                snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, m_note_array[string][nfret], NOTEOFFVELOCITY);
+                snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, m_note_array[string][nfret], NOTE_OFF_VELOCITY);
 #endif
                 
 #ifdef RTMIDI_SUPPORT
