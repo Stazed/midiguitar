@@ -52,7 +52,7 @@ const unsigned char  MIDI_NOTE_ON           = 144;
 const unsigned char  MIDI_NOTE_OFF          = 128;
 #endif  // RTMIDI_SUPPORT
 
-const unsigned char  NOTE_ON_VELOCITY       = 127;
+const unsigned char  NOTE_ON_VELOCITY       = 100;  // default
 const unsigned char  NOTE_OFF_VELOCITY      = 64;
 const int            NO_FRET                = -1;
 
@@ -208,6 +208,7 @@ private:
     int m_last_focus_fret;
     char m_midi_out_channel;
     char m_midi_in_channel;
+    char m_note_on_velocity;
 
 public:
     Guitar(uint a_type, uint a_CC, std::string name, uint a_channel);

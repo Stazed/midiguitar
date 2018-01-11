@@ -43,7 +43,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_last_used_fret(NO_FRET),
     m_last_focus_fret(NO_FRET),
     m_midi_out_channel(a_channel),
-    m_midi_in_channel(0)
+    m_midi_in_channel(0),
+    m_note_on_velocity(NOTE_ON_VELOCITY)
 #ifdef RTMIDI_SUPPORT
     ,m_midiIn(0)
     ,m_midiOut(0)
@@ -122,7 +123,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             o->type(FL_HORIZONTAL);
             o->minimum(0);
             o->maximum(127);
-            o->value(64);
+            o->value((double)NOTE_ON_VELOCITY);
             o->callback((Fl_Callback*) velocity_callback, this);
         } // Fl_Slider* o
         midi_out_group->end();   // Must remember to do this or everything after group declaration is included!
@@ -411,7 +412,7 @@ bool Guitar::init_rt_midi_out()
 
 void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = ON, false = Off
 {
-    unsigned char velocity = NOTE_ON_VELOCITY;
+    unsigned char velocity = m_note_on_velocity;
     m_message.clear();
     
     if(OnorOff)
@@ -749,7 +750,7 @@ void Guitar::cb_fret_callback(Fret* b)
             {
                 fret[i]->copy_label(c_key_table_text[text_array]);
 #ifdef ALSA_SUPPORT
-                snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], NOTE_ON_VELOCITY);
+                snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], m_note_on_velocity);
 #endif
                 
 #ifdef RTMIDI_SUPPORT
@@ -845,7 +846,7 @@ void Guitar::out_channel_callback(Fl_Spinner* o, void* data)
     
 void Guitar::cb_velocity_callback(Fl_Slider* o)
 {
-    // TODO
+    m_note_on_velocity = (char) o->value();
 }
 
 void Guitar::velocity_callback(Fl_Slider* o, void* data)
