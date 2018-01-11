@@ -59,9 +59,9 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         o->callback((Fl_Callback*) reset_callback, this);
     } // Fl_Button* o
     
-    {Fl_Group* midi_in_group = new Fl_Group(145, 13, 290, 51, "Midi In");
+    {Fl_Group* midi_in_group = new Fl_Group(145, 13, 275, 51, "Midi In");
         midi_in_group->labelsize(10);
-        midi_in_group->box(FL_ENGRAVED_BOX);
+        midi_in_group->box(FL_BORDER_BOX);
         {
             Fl_Button* o = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
             o->type(1);
@@ -73,8 +73,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         } // Fl_Button* o
         {
             Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Transpose");
-            o->minimum(-12);
-            o->maximum(12);
+            o->minimum(-24);
+            o->maximum(24);
             o->tooltip("Selected value will adjust incoming midi note up or down.");
             o->value(m_transpose);
             o->align(Fl_Align(FL_ALIGN_TOP));
@@ -181,7 +181,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
 
     /* Guitar Fret Board */
     Fl_Group* guitar_frets = new Fl_Group(47, c_global_fret_height + 72, 965, 126);
-    guitar_frets->box(FL_ENGRAVED_BOX);
+    guitar_frets->box(FL_BORDER_BOX);
     {
         for (int y = 0; y < 6; y++)
         {
