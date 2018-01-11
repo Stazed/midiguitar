@@ -48,13 +48,16 @@ const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;
 const unsigned char  EVENT_CLEAR_CHAN_MASK  = 0xF0;
 const unsigned char  EVENT_CHANNEL          = 0x0F;
 
-const unsigned char  MIDI_NOTE_ON             = 144;
-const unsigned char  MIDI_NOTE_OFF            = 128;
+const unsigned char  MIDI_NOTE_ON           = 144;
+const unsigned char  MIDI_NOTE_OFF          = 128;
 #endif  // RTMIDI_SUPPORT
 
-const unsigned char  NOTE_ON_VELOCITY         = 127;
-const unsigned char  NOTE_OFF_VELOCITY        = 64;
-const int            NO_FRET                  = -1;
+const unsigned char  NOTE_ON_VELOCITY       = 127;
+const unsigned char  NOTE_OFF_VELOCITY      = 64;
+const int            NO_FRET                = -1;
+
+const uint c_global_pixel_scale             = 61;
+const uint c_global_fret_height             = 20;
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
@@ -123,8 +126,6 @@ const uint guitarReverseNote[6][25] ={
 };
 #endif
 
-const uint c_global_pixel_scale = 61;
-const uint c_global_fret_height = 20;
 
 /* This class is not needed - just a wrapper for Fl_Button*/
 class Fret : public Fl_Button
