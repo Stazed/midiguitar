@@ -143,20 +143,31 @@ private:
     
     std::string m_windowLabel;
 
-    void cb_spin_callback(Fl_Spinner*);
-    static void spin_callback(Fl_Spinner*, void*);
-
     void cb_reset_callback(void* Gptr);
     static void reset_callback(Fl_Button*, void*);
+    
+    /* Midi In*/
+    void cb_transpose_callback(Fl_Spinner*);
+    static void transpose_callback(Fl_Spinner*, void*);
 
     void cb_control_callback(Fl_Button*);
     static void control_callback(Fl_Button*, void*);
 
+    void cb_in_channel_callback(Fl_Spinner*);
+    static void in_channel_callback(Fl_Spinner*, void*);
+    
+    /* Midi Out*/
+    void cb_program_callback(Fl_Spinner*);
+    static void program_callback(Fl_Spinner*, void*);
+
+    void cb_out_channel_callback(Fl_Spinner*);
+    static void out_channel_callback(Fl_Spinner*, void*);
+    
+    void cb_velocity_callback(Fl_Slider*);
+    static void velocity_callback(Fl_Slider*, void*);
+    
     void cb_fret_callback(Fret*);
     static void fret_callback(Fret*, void*);
-
-    void cb_channel_callback(Fl_Spinner*);
-    static void channel_callback(Fl_Spinner*, void*);
     
     void cb_string_callback(Fl_Button*);
     static void string_callback(Fl_Button*, void*);

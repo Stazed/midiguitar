@@ -51,15 +51,16 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         
 {
     {
-        Fl_Button* o = new Fl_Button(60, 15, 70, 45, "Reset");
+        Fl_Button* o = new Fl_Button(50, 15, 70, 45, "Reset");
         o->tooltip("Press button to clear all CC values and previous note calculation.\n"
                    "Also, note OFF will be sent to all fret locations.");
-        o->color((Fl_Color) 2);
+        o->color(FL_DARK_RED);
         o->selection_color((Fl_Color) 135);
+        o->labelcolor(FL_WHITE);
         o->callback((Fl_Callback*) reset_callback, this);
     } // Fl_Button* o
     
-    {Fl_Group* midi_in_group = new Fl_Group(145, 13, 275, 51, "Midi In");
+    {Fl_Group* midi_in_group = new Fl_Group(145, 13, 250, 51, "Midi In");
         midi_in_group->labelsize(10);
         midi_in_group->box(FL_BORDER_BOX);
         {
@@ -78,21 +79,57 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             o->tooltip("Selected value will adjust incoming midi note up or down.");
             o->value(m_transpose);
             o->align(Fl_Align(FL_ALIGN_TOP));
-            o->callback((Fl_Callback*) spin_callback, this);
+            o->callback((Fl_Callback*) transpose_callback, this);
         } // Fl_Spinner* o
         {
-            Fl_Spinner* s = new Fl_Spinner(350, 30, 40, 25, "Midi Channel");
+            Fl_Spinner* s = new Fl_Spinner(330, 30, 40, 25, "Channel");
             s->minimum(0);
             s->maximum(16);
             s->tooltip("Enter the midi channel to receive input.\n"
                        "Zero '0' means all channels.");
             s->value(m_midi_in_channel);
             s->align(Fl_Align(FL_ALIGN_TOP));
-            s->callback((Fl_Callback*) channel_callback, this);
+            s->callback((Fl_Callback*) in_channel_callback, this);
         } // Fl_Spinner* o
         midi_in_group->end();   // Must remember to do this or everything after group declaration is included!
         Fl_Group::current()->resizable(midi_in_group);
     }
+    
+    {Fl_Group* midi_out_group = new Fl_Group(420, 13, 365, 51, "Midi Out");
+        midi_out_group->labelsize(10);
+        midi_out_group->box(FL_BORDER_BOX);
+        {
+            Fl_Spinner* o = new Fl_Spinner(435, 30, 50, 25, "Program");
+            o->minimum(0);
+            o->maximum(127);
+            o->tooltip("Set program change");
+            o->value(0);
+            o->align(Fl_Align(FL_ALIGN_TOP));
+            o->callback((Fl_Callback*) program_callback, this);
+        } // Fl_Spinner* o
+        {
+            Fl_Spinner* s = new Fl_Spinner(520, 30, 40, 25, "Channel");
+            s->minimum(1);
+            s->maximum(16);
+            s->tooltip("Enter/select the midi channel to send output");
+            s->value(m_midi_out_channel+1);
+            s->align(Fl_Align(FL_ALIGN_TOP));
+            s->callback((Fl_Callback*) out_channel_callback, this);
+        } // Fl_Spinner* o
+        { 
+            Fl_Slider* o = new Fl_Slider(600, 35, 145, 17, "Velocity");
+            o->align(Fl_Align(FL_ALIGN_TOP));
+            o->type(FL_HORIZONTAL);
+            o->minimum(0);
+            o->maximum(127);
+            o->value(64);
+            o->callback((Fl_Callback*) velocity_callback, this);
+        } // Fl_Slider* o
+        midi_out_group->end();   // Must remember to do this or everything after group declaration is included!
+        Fl_Group::current()->resizable(midi_out_group);
+    }
+    
+    /* Fret numbering */
     int n = 0;
 
     {
@@ -495,6 +532,7 @@ void Guitar::marker(int x, int y)
 
 void Guitar::reset_all_controls()
 {
+    // TODO send Midi all notes off
     for (int i = 0; i < 6; i++)
         gtString[i]->value(0);
     for (int i = 0; i < 127; i++)
@@ -649,14 +687,14 @@ void Guitar::toggle_fret(int location, bool on_off)
     }
 }
 
-void Guitar::cb_spin_callback(Fl_Spinner* o)
+void Guitar::cb_transpose_callback(Fl_Spinner* o)
 {
     m_transpose = o->value();
 }
 
-void Guitar::spin_callback(Fl_Spinner* o, void* data)
+void Guitar::transpose_callback(Fl_Spinner* o, void* data)
 {
-    ((Guitar*) data)->cb_spin_callback(o);
+    ((Guitar*) data)->cb_transpose_callback(o);
 }
 
 void Guitar::cb_reset_callback(void* Gptr )
@@ -775,15 +813,46 @@ void Guitar::fret_callback(Fret* b, void* data)
         b->value(1); // need this since timeout code will take care of callback()
 }
 
-void Guitar::cb_channel_callback(Fl_Spinner* o)
+void Guitar::cb_in_channel_callback(Fl_Spinner* o)
 {
     m_midi_in_channel = o->value();
 }
 
-void Guitar::channel_callback(Fl_Spinner* o, void* data)
+void Guitar::in_channel_callback(Fl_Spinner* o, void* data)
 {
-    ((Guitar*) data)->cb_channel_callback(o);
+    ((Guitar*) data)->cb_in_channel_callback(o);
 }
+
+void Guitar::cb_program_callback(Fl_Spinner* o)
+{
+    // TODO
+}
+
+void Guitar::program_callback(Fl_Spinner* o, void* data)
+{
+    ((Guitar*) data)->cb_program_callback(o);
+}
+
+void Guitar::cb_out_channel_callback(Fl_Spinner* o)
+{
+    m_midi_out_channel = int(o->value()) - 1;
+}
+
+void Guitar::out_channel_callback(Fl_Spinner* o, void* data)
+{
+    ((Guitar*) data)->cb_out_channel_callback(o);
+}
+    
+void Guitar::cb_velocity_callback(Fl_Slider* o)
+{
+    // TODO
+}
+
+void Guitar::velocity_callback(Fl_Slider* o, void* data)
+{
+    ((Guitar*) data)->cb_velocity_callback(o);
+}
+
 
 void Guitar::cb_string_callback(Fl_Button* o)
 {
