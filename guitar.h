@@ -166,6 +166,7 @@ private:
     RtMidiOut *m_midiOut;
     std::vector<unsigned char> m_message;
     
+    bool init_rt_midi();
     bool init_rt_midi_in();
     bool init_rt_midi_out();
     void sendMidiNote(uint note, bool OnorOff);    // bool OnorOff true = ON, false = Off
@@ -177,6 +178,7 @@ private:
 
     snd_seq_t* mHandle;             // handle and client for system notification events
     snd_seq_event_t m_ev;           // for sending from fret mouse press
+    bool init_Alsa();               // set up alsa
     void alsaGetMidiMessages();     // used in Timeout() for polling alsa midi
 #endif
     std::string m_client_name;

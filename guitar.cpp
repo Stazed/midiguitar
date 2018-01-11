@@ -229,60 +229,19 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     Guitar::label(m_windowLabel.c_str());
     
     for (int i = 0; i < 6; i++)
-        storeFretLocation[i] = -1; // initialize the array
+        storeFretLocation[i] = NO_FRET; // initialize the array
 
 #ifdef ALSA_SUPPORT
-    mHandle = 0;
-    char portname[64];
-
-    if (snd_seq_open(&mHandle, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0)
+    if(!init_Alsa())
     {
-        fl_alert("Error opening ALSA sequencer.\n");
         exit(-1);
     }
-
-    snd_seq_set_client_name(mHandle, m_client_name.c_str());
-
-    sprintf(portname, "midi_in");
-    if ((in_port = snd_seq_create_simple_port(mHandle, portname,
-                                              SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
-                                              SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
-    {
-        fl_alert("Error creating sequencer port.\n");
-        exit(-1);
-    }
-
-    sprintf(portname, "midi_out");
-    if ((out_port = snd_seq_create_simple_port(mHandle, portname,
-                                               SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
-                                               SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
-    {
-        fl_alert("Error creating sequencer port.\n");
-        exit(-1);
-    }
-
-    mPollMax = snd_seq_poll_descriptors_count(mHandle, POLLIN);
-    mPollFds = (struct pollfd *) calloc(mPollMax, sizeof (struct pollfd));
-
-    snd_seq_nonblock(mHandle, 1);
 #endif  // ALSA_SUPPORT
     
 #ifdef RTMIDI_SUPPORT
-    if(init_rt_midi_out())
+    if(!init_rt_midi())
     {
-        m_midiOut->openVirtualPort("Output");
-    }else   // not gonna worry about exit - we just won't have port
-    {
-        fl_alert("Error creating RtMidi out port.\n");
-    } 
-    
-    if(init_rt_midi_in())
-    {
-        m_midiIn->openVirtualPort("Input");
-        m_midiIn->setCallback(rtMidiCallback, (void*)this);
-    }else   // not gonna worry about exit - we just won't have port
-    {
-        fl_alert("Error creating RtMidi in port.\n");
+        exit(-1);
     }
 #endif
     //ctor
@@ -302,6 +261,29 @@ Guitar::~Guitar()
 }
 
 #ifdef RTMIDI_SUPPORT
+bool Guitar::init_rt_midi()
+{
+    if(init_rt_midi_out())
+    {
+        m_midiOut->openVirtualPort("Output");
+    }else
+    {
+        fl_alert("Error creating RtMidi out port.\n");
+        return false;
+    } 
+    
+    if(init_rt_midi_in())
+    {
+        m_midiIn->openVirtualPort("Input");
+        m_midiIn->setCallback(rtMidiCallback, (void*)this);
+    }else
+    {
+        fl_alert("Error creating RtMidi in port.\n");
+        return false;
+    }
+    
+    return true;
+}
 
 void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes)
 {
@@ -409,6 +391,44 @@ void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = O
 #endif // RTMIDI_SUPPORT
 
 #ifdef ALSA_SUPPORT
+bool Guitar::init_Alsa()
+{
+    mHandle = 0;
+    char portname[64];
+
+    if (snd_seq_open(&mHandle, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0)
+    {
+        fl_alert("Error opening ALSA sequencer.\n");
+        return false;
+    }
+
+    snd_seq_set_client_name(mHandle, m_client_name.c_str());
+
+    sprintf(portname, "midi_in");
+    if ((in_port = snd_seq_create_simple_port(mHandle, portname,
+                                              SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+                                              SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
+    {
+        fl_alert("Error creating sequencer port.\n");
+        return false;
+    }
+
+    sprintf(portname, "midi_out");
+    if ((out_port = snd_seq_create_simple_port(mHandle, portname,
+                                               SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
+                                               SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
+    {
+        fl_alert("Error creating sequencer port.\n");
+        return false;
+    }
+
+    mPollMax = snd_seq_poll_descriptors_count(mHandle, POLLIN);
+    mPollFds = (struct pollfd *) calloc(mPollMax, sizeof (struct pollfd));
+
+    snd_seq_nonblock(mHandle, 1);
+    return true;
+}
+
 void Guitar::alsaGetMidiMessages()
 {
     /* For MIDI incoming messages */
@@ -791,17 +811,17 @@ int Guitar::calculate_closest_fret()
 
     // printf("last_x %d: last_y %d\n",last_X,last_Y);
 
-    int closest_fret = -1;
-    int last_diff = -1;
+    int closest_fret = NO_FRET;
+    int last_diff = NO_FRET;
 
     //printf("last_fret %d\n",m_last_used_fret);
     for (int i = 0; i < 6; i++)
     {
         // printf("storeFret %d: last_diff %d\n",storeFretLocation[i],last_diff);
-        if (storeFretLocation[i] == -1)
+        if (storeFretLocation[i] == NO_FRET)
             continue;
 
-        if (closest_fret == -1)
+        if (closest_fret == NO_FRET)
             closest_fret = storeFretLocation[i];
 
         int X = get_fret_center(fret[storeFretLocation[i]]->x(), fret[storeFretLocation[i]]->h());
@@ -811,7 +831,7 @@ int Guitar::calculate_closest_fret()
 
         int current_diff = abs(last_X - X) + abs(last_Y - Y);
 
-        if (last_diff == -1)
+        if (last_diff == NO_FRET)
         {
             last_diff = current_diff;
             closest_fret = storeFretLocation[i];
@@ -823,7 +843,7 @@ int Guitar::calculate_closest_fret()
     }
 
     for (int i = 0; i < 6; i++)
-        storeFretLocation[i] = -1; // clear the array
+        storeFretLocation[i] = NO_FRET; // clear the array
 
     m_last_fret = true;
     m_last_used_fret = closest_fret;
