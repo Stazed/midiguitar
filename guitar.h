@@ -40,6 +40,13 @@
 
 #ifdef RTMIDI_SUPPORT
 #include "RtMidi.h"
+#endif  // RTMIDI_SUPPORT
+
+#define JACK_SUPPORT 1
+#ifdef JACK_SUPPORT
+#include <jack/jack.h>
+#include <jack/midiport.h>
+#endif
 
 const unsigned char  EVENT_STATUS_BIT       = 0x80;
 const unsigned char  EVENT_NOTE_OFF         = 0x80;
@@ -51,8 +58,6 @@ const unsigned char  EVENT_CHANNEL          = 0x0F;
 
 const unsigned char  MIDI_NOTE_ON           = 144;
 const unsigned char  MIDI_NOTE_OFF          = 128;
-#endif  // RTMIDI_SUPPORT
-
 const unsigned char  NOTE_ON_VELOCITY       = 100;  // default
 const unsigned char  NOTE_OFF_VELOCITY      = 64;
 const int            NO_FRET                = -1;
@@ -173,7 +178,6 @@ private:
     void cb_string_callback(Fl_Button*);
     static void string_callback(Fl_Button*, void*);
     
-    
 #ifdef RTMIDI_SUPPORT
     RtMidiIn  *m_midiIn;
     RtMidiOut *m_midiOut;
@@ -182,7 +186,7 @@ private:
     bool init_rt_midi();
     bool init_rt_midi_in();
     bool init_rt_midi_out();
-    void RtplayMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes);
+    void RtplayMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes);  // Midi In
     static void RtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
     void RtSendMidiNote(uint note, bool OnorOff);    // bool OnorOff true = ON, false = Off
     void RtSendProgramChange(uint a_change);
@@ -196,10 +200,25 @@ private:
     snd_seq_t* mHandle;             // handle and client for system notification events
     snd_seq_event_t m_ev;           // for sending from fret mouse press & program change
     bool init_Alsa();               // set up alsa
-    void alsaGetMidiMessages();     // used in Timeout() for polling alsa midi
+    void alsaGetMidiMessages();     // used in Timeout() for polling alsa Midi In
     void alsaSendMidiNote(uint a_note, bool On_or_Off);
     void alsaSendProgramChange(uint a_change);
 #endif
+    
+#ifdef JACK_SUPPORT
+    jack_port_t *m_jack_midi_out;
+    jack_port_t *m_jack_midi_in;
+    jack_client_t *m_jack_client;
+    void *m_data_out;
+    
+    bool init_jack();
+    static int process(jack_nframes_t nframes, void *arg);
+//    static void jack_shutdown(void *arg);
+    void JackPlayMidiGuitar(jack_midi_event_t *midievent);
+    void JackSendMidiNote(uint note, bool On_or_Off);
+    void JackSendProgramChange(uint a_change);
+#endif
+
     std::string m_client_name;
 
     uint m_note_array[6][25];

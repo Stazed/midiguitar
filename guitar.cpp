@@ -286,6 +286,10 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         exit(-1);
     }
 #endif
+    
+#ifdef JACK_SUPPORT
+    init_jack();
+#endif
     //ctor
 }
 
@@ -298,6 +302,10 @@ Guitar::~Guitar()
 #ifdef RTMIDI_SUPPORT
     delete m_midiIn;
     delete m_midiOut;
+#endif
+    
+#ifdef JACK_SUPPORT
+    jack_client_close (m_jack_client);
 #endif
     //dtor
 }
@@ -558,8 +566,113 @@ void Guitar::alsaSendProgramChange(uint a_change)
     
     snd_seq_ev_clear(&m_ev);
 }
-
 #endif // ALSA_SUPPORT
+
+#ifdef JACK_SUPPORT
+    
+bool Guitar::init_jack()
+{
+    if ((m_jack_client = jack_client_open (m_client_name.c_str(), JackNoStartServer, NULL)) == 0)
+    {
+        fl_alert("Jack server is not running");
+        return false;
+    }
+
+    jack_set_process_callback (m_jack_client, process, this);
+
+//    jack_on_shutdown (m_jack_client, jack_shutdown, this);
+
+    m_jack_midi_in = jack_port_register (m_jack_client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+    m_jack_midi_out = jack_port_register (m_jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+
+    if (jack_activate (m_jack_client))
+    {
+        fl_alert("Cannot activate Jack client");
+        return false;
+    }
+    return true;
+}
+
+int Guitar::process(jack_nframes_t nframes, void *arg)
+{
+    int i, count;
+    Guitar *Gtr = ((Guitar*)arg);
+    
+    /* For midi incoming */
+    jack_midi_event_t midievent;
+    float *data = (float *)jack_port_get_buffer(Gtr->m_jack_midi_in, nframes);
+    count = jack_midi_get_event_count(data);
+
+    for (i = 0; i < count; i++)
+    {
+        jack_midi_event_get(&midievent, data, i);
+        Gtr->JackPlayMidiGuitar(&midievent);
+    }
+
+    /* For midi outgoing */
+    Gtr->m_data_out = jack_port_get_buffer(Gtr->m_jack_midi_out, nframes);
+    jack_midi_clear_buffer(Gtr->m_data_out);
+    
+    return 0;
+}
+
+/*
+void Guitar::jack_shutdown(void *arg)
+{
+    //((Guitar*)arg)->fl_alert("Jack shut down!");
+    //fl_alert("Jack shut down!");
+    // TODO
+}*/
+
+void Guitar::JackPlayMidiGuitar(jack_midi_event_t *midievent)
+{
+    /* We only care about note on/off and CC which are 3 bytes */
+    if(midievent->size != 3)
+        return;
+    
+    /* events */
+    unsigned char status = 0, channel = 0, parameter = 0, value = 0; 
+    
+    status = midievent->buffer[0];
+    channel = (midievent->buffer[0]  & EVENT_CHANNEL);
+    parameter = midievent->buffer[1];     // for notes = key, for CC = which one
+    value = midievent->buffer[2];         // for notes = velocity, for CC = value sent
+    
+    /* For Notes & CC we compare with EVENT_CLEAR_CHAN_MASK because we do not 
+     want to iterate through 16 different items do to the channel bit. So we
+     mask it off to compare to the single generic note or CC.
+     User is 1 to 16, we are 0 to 15 (= -1). Channel 0 (user) means all channels*/
+    
+    if(channel == m_midi_in_channel - 1 || m_midi_in_channel == 0)
+    {
+        if (((status & EVENT_CLEAR_CHAN_MASK) == EVENT_CONTROL_CHANGE) &&
+            (parameter == m_guitar_string_param) &&
+            (m_bcontrol == true))
+        {
+            if (value >= 1 && value <= 6)   // must do or it gets sent to random key pointer
+            {
+                stringToggle(value - 1);    // we use 0 to 5, but user is 1 to 6
+            }
+        }
+              
+        if ((status & EVENT_CLEAR_CHAN_MASK) == EVENT_NOTE_ON)
+            fretToggle(parameter, true);
+
+        if ((status & EVENT_CLEAR_CHAN_MASK) == EVENT_NOTE_OFF)
+            fretToggle(parameter, false);
+    }
+}
+
+void Guitar::JackSendMidiNote(uint note, bool On_or_Off)
+{
+    // TODO
+}
+
+void Guitar::JackSendProgramChange(uint a_change)
+{
+    // TODO
+}
+#endif
 
 float Guitar::fret_distance(int num_fret)
 {
