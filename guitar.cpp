@@ -317,7 +317,7 @@ bool Guitar::init_rt_midi()
     if(init_rt_midi_in())
     {
         m_midiIn->openVirtualPort("Input");
-        m_midiIn->setCallback(rtMidiCallback, (void*)this);
+        m_midiIn->setCallback(RtMidiCallback, (void*)this);
     }else
     {
         fl_alert("Error creating RtMidi in port.\n");
@@ -327,7 +327,7 @@ bool Guitar::init_rt_midi()
     return true;
 }
 
-void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes)
+void Guitar::RtplayMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes)
 {
     /* We only care about note on/off and CC which are 3 bytes */
     if(nBytes != 3)
@@ -366,14 +366,14 @@ void Guitar::playMidiGuitar(std::vector< unsigned char > *message, unsigned int 
     }
 }
 
-void Guitar::rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData)
+void Guitar::RtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData)
 {
     Guitar *MidiGit = (Guitar*)userData;
 
     unsigned int nBytes = message->size();
     if(nBytes)
     {
-        MidiGit->playMidiGuitar(message, nBytes);
+        MidiGit->RtplayMidiGuitar(message, nBytes);
     
         MidiGit->m_midiOut->sendMessage(message ); // Pass thru to out port
     }
@@ -410,7 +410,7 @@ bool Guitar::init_rt_midi_out()
     return true;
 }
 
-void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = ON, false = Off
+void Guitar::RtSendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = ON, false = Off
 {
     unsigned char velocity = m_note_on_velocity;
     m_message.clear();
@@ -426,6 +426,15 @@ void Guitar::sendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = O
     
     m_message.push_back(note);
     m_message.push_back(velocity);
+    
+    m_midiOut->sendMessage(&m_message);
+}
+
+void Guitar::RtSendProgramChange(uint a_change)
+{
+    m_message.clear();
+    m_message.push_back(EVENT_PROGRAM_CHANGE + m_midi_out_channel);
+    m_message.push_back(a_change);
     
     m_midiOut->sendMessage(&m_message);
 }
@@ -516,6 +525,40 @@ void Guitar::alsaGetMidiMessages()
         }
     } while (ev);
 }
+
+void Guitar::alsaSendMidiNote(uint a_note, bool On_or_Off)
+{
+    snd_seq_ev_clear(&m_ev);
+    if(On_or_Off)
+        snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, a_note, m_note_on_velocity);
+    else
+        snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, a_note, NOTE_OFF_VELOCITY);
+    
+    snd_seq_ev_set_source(&m_ev, out_port);
+    snd_seq_ev_set_subs(&m_ev);
+    snd_seq_ev_set_direct(&m_ev);
+    snd_seq_event_output_direct(mHandle, &m_ev);
+    snd_seq_drain_output(mHandle);
+    
+    snd_seq_ev_clear(&m_ev);
+}
+
+void Guitar::alsaSendProgramChange(uint a_change)
+{
+    snd_seq_ev_clear(&m_ev);
+    
+    snd_seq_ev_set_pgmchange(&m_ev,m_midi_out_channel,a_change);
+    
+    /* Send the program change to out port */
+    snd_seq_ev_set_source(&m_ev, out_port);
+    snd_seq_ev_set_subs(&m_ev);
+    snd_seq_ev_set_direct(&m_ev);
+    snd_seq_event_output_direct(mHandle, &m_ev);
+    snd_seq_drain_output(mHandle);
+    
+    snd_seq_ev_clear(&m_ev);
+}
+
 #endif // ALSA_SUPPORT
 
 float Guitar::fret_distance(int num_fret)
@@ -743,18 +786,15 @@ void Guitar::cb_fret_callback(Fret* b)
                 string = (5 - string);
                 text_array = (string * 25) + nfret;
             }
-#ifdef ALSA_SUPPORT
-            snd_seq_ev_clear(&m_ev);
-#endif
+
             if (fret[i]->value() == 1) // if ON note - display text & set midi note on
             {
                 fret[i]->copy_label(c_key_table_text[text_array]);
 #ifdef ALSA_SUPPORT
-                snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, m_note_array[string][nfret], m_note_on_velocity);
-#endif
-                
+                alsaSendMidiNote(m_note_array[string][nfret], true);
+#endif    
 #ifdef RTMIDI_SUPPORT
-                sendMidiNote(m_note_array[string][nfret], true);
+                RtSendMidiNote(m_note_array[string][nfret], true);
 #endif
             } else // note off - clear text & set midi note off
             {
@@ -764,29 +804,16 @@ void Guitar::cb_fret_callback(Fret* b)
 
                 fret[i]->copy_label(label.c_str());
 #ifdef ALSA_SUPPORT
-                snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, m_note_array[string][nfret], NOTE_OFF_VELOCITY);
-#endif
-                
+                alsaSendMidiNote(m_note_array[string][nfret], false);
+#endif      
 #ifdef RTMIDI_SUPPORT
-                sendMidiNote(m_note_array[string][nfret], false);
+                RtSendMidiNote(m_note_array[string][nfret], false);
 #endif
             }
-
             //printf("string = %d: fret = %d: note %u\n",string,nfret, m_note_array[string][nfret]);
-#ifdef ALSA_SUPPORT
-            /* Send the midi note to out port */
-            snd_seq_ev_set_source(&m_ev, out_port);
-            snd_seq_ev_set_subs(&m_ev);
-            snd_seq_ev_set_direct(&m_ev);
-            snd_seq_event_output_direct(mHandle, &m_ev);
-            snd_seq_drain_output(mHandle);
-#endif  // ALSA_SUPPORT
             break;
         }
     }
-#ifdef ALSA_SUPPORT
-    snd_seq_ev_clear(&m_ev);
-#endif
 }
 
 Fret *Guitar::get_drag_fret()
@@ -826,7 +853,12 @@ void Guitar::in_channel_callback(Fl_Spinner* o, void* data)
 
 void Guitar::cb_program_callback(Fl_Spinner* o)
 {
-    // TODO
+#ifdef RTMIDI_SUPPORT
+    RtSendProgramChange((uint) o->value());
+#endif
+#ifdef ALSA_SUPPORT
+    alsaSendProgramChange((uint) o->value());
+#endif
 }
 
 void Guitar::program_callback(Fl_Spinner* o, void* data)

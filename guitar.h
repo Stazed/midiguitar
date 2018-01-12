@@ -45,6 +45,7 @@ const unsigned char  EVENT_STATUS_BIT       = 0x80;
 const unsigned char  EVENT_NOTE_OFF         = 0x80;
 const unsigned char  EVENT_NOTE_ON          = 0x90;
 const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;
+const unsigned char  EVENT_PROGRAM_CHANGE   = 0xC0;
 const unsigned char  EVENT_CLEAR_CHAN_MASK  = 0xF0;
 const unsigned char  EVENT_CHANNEL          = 0x0F;
 
@@ -181,17 +182,23 @@ private:
     bool init_rt_midi();
     bool init_rt_midi_in();
     bool init_rt_midi_out();
-    void sendMidiNote(uint note, bool OnorOff);    // bool OnorOff true = ON, false = Off
+    void RtplayMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes);
+    static void RtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
+    void RtSendMidiNote(uint note, bool OnorOff);    // bool OnorOff true = ON, false = Off
+    void RtSendProgramChange(uint a_change);
 #endif    
 
 #ifdef ALSA_SUPPORT
     struct pollfd *mPollFds;
     int mPollMax, in_port, out_port;
+    snd_seq_t* GetHandle(void) {return mHandle;}
 
     snd_seq_t* mHandle;             // handle and client for system notification events
-    snd_seq_event_t m_ev;           // for sending from fret mouse press
+    snd_seq_event_t m_ev;           // for sending from fret mouse press & program change
     bool init_Alsa();               // set up alsa
     void alsaGetMidiMessages();     // used in Timeout() for polling alsa midi
+    void alsaSendMidiNote(uint a_note, bool On_or_Off);
+    void alsaSendProgramChange(uint a_change);
 #endif
     std::string m_client_name;
 
@@ -215,17 +222,7 @@ public:
     virtual ~Guitar();
 
     float fret_distance(int num_fret);
-
     void marker(int x, int y);
-    
-#ifdef RTMIDI_SUPPORT
-    void playMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes);
-    static void rtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
-#endif
-
-#ifdef ALSA_SUPPORT
-    snd_seq_t* GetHandle(void) {return mHandle;}
-#endif
     
     static void TimeoutStatic(void* ptr)
     {
