@@ -41,21 +41,21 @@ else
 fi
 
 AC_ARG_ENABLE(rtmidi,
-    [AS_HELP_STRING(--disable-rtmidi, [Disable rtmidi build, which is the default])],
+    [AS_HELP_STRING(--disable-rtmidi, [Disable RtMidi build. RtMidi is the default build])],
     [rtmidi=$enableval],
     [rtmidi=yes])
 
 if test "$rtmidi" != "no"; then
-    AC_DEFINE(RTMIDI_SUPPORT, 1, [Indicates if rtmidi is enabled])
+    AC_DEFINE(RTMIDI_SUPPORT, 1, [Define to 1 to enable RtMidi build])
     if test "x$ac_asound" = "xyes"; then
-    AC_DEFINE([__LINUX_ALSA__], [], [Define to enable alsa to be used by rtmidi])
+    AC_DEFINE([__LINUX_ALSA__], 1 , [Define to 1 to enable alsa to be used by RtMidi])
     fi
     if test "x$ac_jack" = "xyes"; then
-    AC_DEFINE([__UNIX_JACK__], [], [Define to enable jack to be used by rtmidi])
+    AC_DEFINE([__UNIX_JACK__], 1 , [Define to 1 to enable jack to be used by RtMidi])
     fi
-    AC_MSG_RESULT([rtmidi native build enabled]);
+    AC_MSG_RESULT([RtMidi native build enabled]);
 else
-    AC_MSG_WARN([rtmidi native build disabled]);
+    AC_MSG_WARN([RtMidi native build disabled]);
 fi
 
 if test "x$ac_asound" = "xyes"; then
@@ -66,7 +66,7 @@ AC_ARG_ENABLE(alsa,
 fi
 
 if test "$alsa" != "no"; then
-    AC_DEFINE(ALSA_SUPPORT, 1, [Indicates if alsa legacy support is enabled])
+    AC_DEFINE(ALSA_SUPPORT, 1, [Define to 1 to enable alsa legacy support])
     AC_MSG_RESULT([alsa legacy support enabled]);
 else
     AC_MSG_WARN([alsa legacy support disabled]);
