@@ -576,13 +576,22 @@ void Guitar::marker(int x, int y)
 
 void Guitar::reset_all_controls()
 {
-    // TODO send Midi all notes off
     for (int i = 0; i < 6; i++)
         gtString[i]->value(0);
     for (int i = 0; i < 127; i++)
         fretToggle(i, false);
 
     m_have_string_toggle = false;
+    
+    for (int i = 0; i < 127; i++)
+    {
+#ifdef RTMIDI_SUPPORT
+        RtSendMidiNote(i, false);
+#endif
+#ifdef ALSA_SUPPORT
+        alsaSendMidiNote(i, false);
+#endif
+    }
 }
 
 void Guitar::Timeout(void)
