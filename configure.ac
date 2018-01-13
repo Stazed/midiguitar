@@ -58,6 +58,20 @@ else
     AC_MSG_WARN([RtMidi native build disabled]);
 fi
 
+if test "x$ac_jack" = "xyes"; then
+AC_ARG_ENABLE(jack,
+    [AS_HELP_STRING(--enable-jack, [Enable jack standalone support])],
+    [jack=$enableval],
+    [jack=no])
+fi
+
+if test "$jack" != "no"; then
+    AC_DEFINE(JACK_SUPPORT, 1, [Define to 1 to enable jack standalone support])
+    AC_MSG_RESULT([jack standalone support enabled]);
+else
+    AC_MSG_WARN([jack standalone support disabled]);
+fi
+
 if test "x$ac_asound" = "xyes"; then
 AC_ARG_ENABLE(alsa,
     [AS_HELP_STRING(--enable-alsa, [Enable legacy alsa support])],
