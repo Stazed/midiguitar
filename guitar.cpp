@@ -49,6 +49,10 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     ,m_midiIn(0)
     ,m_midiOut(0)
 #endif
+#ifdef JACK_SUPPORT
+    ,m_jack_midi_in_port(NULL)
+    ,m_jack_midi_out_port(NULL)
+#endif
         
 {
     {
@@ -305,7 +309,10 @@ Guitar::~Guitar()
 #endif
     
 #ifdef JACK_SUPPORT
-    jack_client_close (m_jack_client);
+    jack_ringbuffer_free( m_buffSize );
+    jack_ringbuffer_free( m_buffMessage );
+    if ( m_jack_client ) {
+        jack_client_close (m_jack_client);}
 #endif
     //dtor
 }
@@ -572,6 +579,10 @@ void Guitar::alsaSendProgramChange(uint a_change)
     
 bool Guitar::init_jack()
 {
+    // Initialize output ringbuffers  
+    m_buffSize = jack_ringbuffer_create( JACK_RINGBUFFER_SIZE );
+    m_buffMessage = jack_ringbuffer_create( JACK_RINGBUFFER_SIZE );
+    
     if ((m_jack_client = jack_client_open (m_client_name.c_str(), JackNoStartServer, NULL)) == 0)
     {
         fl_alert("Jack server is not running");
@@ -582,8 +593,8 @@ bool Guitar::init_jack()
 
 //    jack_on_shutdown (m_jack_client, jack_shutdown, this);
 
-    m_jack_midi_in = jack_port_register (m_jack_client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-    m_jack_midi_out = jack_port_register (m_jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+    m_jack_midi_in_port = jack_port_register (m_jack_client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+    m_jack_midi_out_port = jack_port_register (m_jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
 
     if (jack_activate (m_jack_client))
     {
@@ -600,9 +611,13 @@ int Guitar::process(jack_nframes_t nframes, void *arg)
     
     /* For midi incoming */
     jack_midi_event_t midievent;
-    float *data = (float *)jack_port_get_buffer(Gtr->m_jack_midi_in, nframes);
+    
+    // Is port created?
+    if ( Gtr->m_jack_midi_in_port == NULL ) return 0;   // we ignore out port as well!
+    
+    float *data = (float *)jack_port_get_buffer(Gtr->m_jack_midi_in_port, nframes);
     count = jack_midi_get_event_count(data);
-
+    
     for (i = 0; i < count; i++)
     {
         jack_midi_event_get(&midievent, data, i);
@@ -610,9 +625,23 @@ int Guitar::process(jack_nframes_t nframes, void *arg)
     }
 
     /* For midi outgoing */
-    Gtr->m_data_out = jack_port_get_buffer(Gtr->m_jack_midi_out, nframes);
-    jack_midi_clear_buffer(Gtr->m_data_out);
+    jack_midi_data_t *midiData;
+    int space;
     
+    // Is port created?
+    if ( Gtr->m_jack_midi_out_port == NULL ) return 0;
+
+    void *buffer = jack_port_get_buffer( Gtr->m_jack_midi_out_port, nframes );
+    jack_midi_clear_buffer( buffer );
+
+    while ( jack_ringbuffer_read_space( Gtr->m_buffSize ) > 0 )
+    {
+        jack_ringbuffer_read( Gtr->m_buffSize, (char *) &space, (size_t) sizeof(space) );
+        midiData = jack_midi_event_reserve( buffer, 0, space );
+
+        jack_ringbuffer_read( Gtr->m_buffMessage, (char *) midiData, (size_t) space );
+    }
+ 
     return 0;
 }
 
@@ -665,7 +694,28 @@ void Guitar::JackPlayMidiGuitar(jack_midi_event_t *midievent)
 
 void Guitar::JackSendMidiNote(uint note, bool On_or_Off)
 {
-    // TODO
+    size_t size = 3;
+    unsigned char velocity = m_note_on_velocity;
+    int nBytes = static_cast<int>(size);
+
+    if(On_or_Off)
+    {
+        m_jack_midi_data[0] = MIDI_NOTE_ON + m_midi_out_channel;
+    }
+    else
+    {
+        m_jack_midi_data[0] = MIDI_NOTE_OFF + m_midi_out_channel;
+        velocity = NOTE_OFF_VELOCITY;
+    }
+    m_jack_midi_data[1] = note;
+    m_jack_midi_data[2] = velocity;
+    
+    //printf("midi_data[0] = %d: [1] = %d: [2] = %d\n", m_jack_midi_data[0], m_jack_midi_data[1],m_jack_midi_data[2]);
+    
+    // Write full message to buffer
+    jack_ringbuffer_write( m_buffMessage, ( const char * ) m_jack_midi_data,
+                           nBytes );
+    jack_ringbuffer_write( m_buffSize, ( char * ) &nBytes, sizeof( nBytes ) );
 }
 
 void Guitar::JackSendProgramChange(uint a_change)
@@ -703,6 +753,9 @@ void Guitar::reset_all_controls()
 #endif
 #ifdef ALSA_SUPPORT
         alsaSendMidiNote(i, false);
+#endif
+#ifdef JACK_SUPPORT
+        JackSendMidiNote(i, false);
 #endif
     }
 }
@@ -918,6 +971,9 @@ void Guitar::cb_fret_callback(Fret* b)
 #ifdef RTMIDI_SUPPORT
                 RtSendMidiNote(m_note_array[string][nfret], true);
 #endif
+#ifdef JACK_SUPPORT
+                JackSendMidiNote(m_note_array[string][nfret], true);
+#endif                
             } else // note off - clear text & set midi note off
             {
                 std::string label = "";
@@ -930,6 +986,9 @@ void Guitar::cb_fret_callback(Fret* b)
 #endif      
 #ifdef RTMIDI_SUPPORT
                 RtSendMidiNote(m_note_array[string][nfret], false);
+#endif
+                #ifdef JACK_SUPPORT
+                JackSendMidiNote(m_note_array[string][nfret], false);
 #endif
             }
             //printf("string = %d: fret = %d: note %u\n",string,nfret, m_note_array[string][nfret]);

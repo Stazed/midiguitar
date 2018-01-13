@@ -42,10 +42,14 @@
 #include "RtMidi.h"
 #endif  // RTMIDI_SUPPORT
 
-#define JACK_SUPPORT 1
+
+//#define JACK_SUPPORT 1
 #ifdef JACK_SUPPORT
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#include <jack/ringbuffer.h>
+
+#define JACK_RINGBUFFER_SIZE 16384 // Default size for ringbuffer
 #endif
 
 const unsigned char  EVENT_STATUS_BIT       = 0x80;
@@ -206,10 +210,12 @@ private:
 #endif
     
 #ifdef JACK_SUPPORT
-    jack_port_t *m_jack_midi_out;
-    jack_port_t *m_jack_midi_in;
-    jack_client_t *m_jack_client;
-    void *m_data_out;
+    jack_midi_data_t    m_jack_midi_data[3];
+    jack_port_t         *m_jack_midi_out_port;
+    jack_port_t         *m_jack_midi_in_port;
+    jack_client_t       *m_jack_client;
+    jack_ringbuffer_t   *m_buffSize;
+    jack_ringbuffer_t   *m_buffMessage;
     
     bool init_jack();
     static int process(jack_nframes_t nframes, void *arg);
