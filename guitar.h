@@ -43,7 +43,6 @@
 #endif  // RTMIDI_SUPPORT
 
 
-//#define JACK_SUPPORT 1
 #ifdef JACK_SUPPORT
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -219,7 +218,7 @@ private:
     
     bool init_jack();
     static int process(jack_nframes_t nframes, void *arg);
-//    static void jack_shutdown(void *arg);
+    static void jack_shutdown(void *arg);
     void JackPlayMidiGuitar(jack_midi_event_t *midievent);
     void JackSendMidiNote(uint note, bool On_or_Off);
     void JackSendProgramChange(uint a_change);

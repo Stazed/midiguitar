@@ -591,7 +591,7 @@ bool Guitar::init_jack()
 
     jack_set_process_callback (m_jack_client, process, this);
 
-//    jack_on_shutdown (m_jack_client, jack_shutdown, this);
+    jack_on_shutdown (m_jack_client, jack_shutdown, this);
 
     m_jack_midi_in_port = jack_port_register (m_jack_client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
     m_jack_midi_out_port = jack_port_register (m_jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
@@ -645,13 +645,11 @@ int Guitar::process(jack_nframes_t nframes, void *arg)
     return 0;
 }
 
-/*
+
 void Guitar::jack_shutdown(void *arg)
 {
-    //((Guitar*)arg)->fl_alert("Jack shut down!");
-    //fl_alert("Jack shut down!");
-    // TODO
-}*/
+    printf("Jack shut down!\n");
+}
 
 void Guitar::JackPlayMidiGuitar(jack_midi_event_t *midievent)
 {
@@ -710,7 +708,7 @@ void Guitar::JackSendMidiNote(uint note, bool On_or_Off)
     m_jack_midi_data[1] = note;
     m_jack_midi_data[2] = velocity;
     
-    //printf("midi_data[0] = %d: [1] = %d: [2] = %d\n", m_jack_midi_data[0], m_jack_midi_data[1],m_jack_midi_data[2]);
+    /* printf("midi_data[0] = %d: [1] = %d: [2] = %d\n", m_jack_midi_data[0], m_jack_midi_data[1],m_jack_midi_data[2]);*/
     
     // Write full message to buffer
     jack_ringbuffer_write( m_buffMessage, ( const char * ) m_jack_midi_data,
@@ -720,9 +718,19 @@ void Guitar::JackSendMidiNote(uint note, bool On_or_Off)
 
 void Guitar::JackSendProgramChange(uint a_change)
 {
-    // TODO
+    size_t size = 2;
+    int nBytes = static_cast<int>(size);
+    
+    m_jack_midi_data[0] = EVENT_PROGRAM_CHANGE + m_midi_out_channel;
+    m_jack_midi_data[1] = a_change;
+    
+    // Write full message to buffer
+    jack_ringbuffer_write( m_buffMessage, ( const char * ) m_jack_midi_data,
+                           nBytes );
+    jack_ringbuffer_write( m_buffSize, ( char * ) &nBytes, sizeof( nBytes ) );
+
 }
-#endif
+#endif  // JACK_SUPPORT
 
 float Guitar::fret_distance(int num_fret)
 {
@@ -1039,6 +1047,9 @@ void Guitar::cb_program_callback(Fl_Spinner* o)
 #endif
 #ifdef ALSA_SUPPORT
     alsaSendProgramChange((uint) o->value());
+#endif
+#ifdef JACK_SUPPORT
+    JackSendProgramChange((uint) o->value());
 #endif
 }
 
