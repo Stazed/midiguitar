@@ -432,10 +432,10 @@ void Guitar::RtSendMidiNote(uint note, bool OnorOff)      // bool OnorOff true =
     
     if(OnorOff)
     {
-        m_message.push_back(MIDI_NOTE_ON + m_midi_out_channel);       // status note ON
+        m_message.push_back(EVENT_NOTE_ON + m_midi_out_channel);       // status note ON
     }else
     {
-        m_message.push_back(MIDI_NOTE_OFF + m_midi_out_channel);       // status note Off
+        m_message.push_back(EVENT_NOTE_OFF + m_midi_out_channel);       // status note Off
         velocity = NOTE_OFF_VELOCITY;
     }
     
@@ -698,11 +698,11 @@ void Guitar::JackSendMidiNote(uint note, bool On_or_Off)
 
     if(On_or_Off)
     {
-        m_jack_midi_data[0] = MIDI_NOTE_ON + m_midi_out_channel;
+        m_jack_midi_data[0] = EVENT_NOTE_ON + m_midi_out_channel;
     }
     else
     {
-        m_jack_midi_data[0] = MIDI_NOTE_OFF + m_midi_out_channel;
+        m_jack_midi_data[0] = EVENT_NOTE_OFF + m_midi_out_channel;
         velocity = NOTE_OFF_VELOCITY;
     }
     m_jack_midi_data[1] = note;

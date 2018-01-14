@@ -26,15 +26,13 @@
 #endif
 
 const unsigned char  EVENT_STATUS_BIT       = 0x80;
-const unsigned char  EVENT_NOTE_OFF         = 0x80;
-const unsigned char  EVENT_NOTE_ON          = 0x90;
+const unsigned char  EVENT_NOTE_OFF         = 0x80;     // decimal 128
+const unsigned char  EVENT_NOTE_ON          = 0x90;     // decimal 144
 const unsigned char  EVENT_CONTROL_CHANGE   = 0xB0;
 const unsigned char  EVENT_PROGRAM_CHANGE   = 0xC0;
 const unsigned char  EVENT_CLEAR_CHAN_MASK  = 0xF0;
 const unsigned char  EVENT_CHANNEL          = 0x0F;
 
-const unsigned char  MIDI_NOTE_ON           = 144;
-const unsigned char  MIDI_NOTE_OFF          = 128;
 const unsigned char  NOTE_ON_VELOCITY       = 100;  // default
 const unsigned char  NOTE_OFF_VELOCITY      = 64;
 const int            NO_FRET                = -1;
