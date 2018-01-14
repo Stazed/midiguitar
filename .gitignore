@@ -18,3 +18,5 @@ midiguitar-1.0.tar.gz
 stamp-h1
 autoscan.log
 configure.scan
+src/Makefile.in
+src/config.h.in
