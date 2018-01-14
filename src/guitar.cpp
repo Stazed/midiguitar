@@ -257,22 +257,22 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     }
     guitar_frets->end();    // Must remember to do this or everything after group declaration is included!
 
-    Guitar::marker(260, 250);
-    Guitar::marker(372, 250);
-    Guitar::marker(475, 250);
-    Guitar::marker(571, 250);
-    Guitar::marker(688, 250);
-    Guitar::marker(688, 270);
-    Guitar::marker(788, 250);
-    Guitar::marker(844, 250);
-    Guitar::marker(895, 250);
-    Guitar::marker(941, 250);
+    marker(260, 250);
+    marker(372, 250);
+    marker(475, 250);
+    marker(571, 250);
+    marker(688, 250);
+    marker(688, 270);
+    marker(788, 250);
+    marker(844, 250);
+    marker(895, 250);
+    marker(941, 250);
     
     this->size_range(1020, 280, 0, 0, 0, 0, 1); // sets minimum & the 1 = scalable
     this->resizable(this);
     
     m_windowLabel += PACKAGE_VERSION;
-    Guitar::label(m_windowLabel.c_str());
+    label(m_windowLabel.c_str());
     
     for (int i = 0; i < 6; i++)
         storeFretLocation[i] = NO_FRET; // initialize the array
