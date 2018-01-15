@@ -156,27 +156,6 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         b->copy_label(SSTR(n).c_str()); // n = 1 to 24
         n++;
     }
-
-
-    if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
-    {
-        for (int i = 5; i >= 0; i--)
-        {
-            for (int j = 0; j < 25; j++)
-            {
-                m_note_array[i][j] = guitarMidiNote[i][j];
-            }
-        }
-    } else
-    {
-        for (int i = 0; i < 6; i++)
-        {
-            for (int j = 0; j < 25; j++)
-            {
-                m_note_array[i][j] = guitarMidiNote[i][j];
-            }
-        }
-    }
     
     /* Guitar string toggle buttons */
     char note_string[] = "EBGDAE";
@@ -274,6 +253,29 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_windowLabel += PACKAGE_VERSION;
     label(m_windowLabel.c_str());
     
+    /* End Window */
+    
+    /* Load the Midi note numeric value into note array according to guitar type */
+    if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
+    {
+        for (int i = 5; i >= 0; i--)
+        {
+            for (int j = 0; j < 25; j++)
+            {
+                m_note_array[i][j] = guitarMidiNote[i][j];
+            }
+        }
+    } else
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 25; j++)
+            {
+                m_note_array[i][j] = guitarMidiNote[i][j];
+            }
+        }
+    }
+    
     for (int i = 0; i < 6; i++)
         storeFretLocation[i] = NO_FRET; // initialize the array
 
@@ -292,7 +294,10 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
 #endif
     
 #ifdef JACK_SUPPORT
-    init_jack();
+    if(!init_jack())
+    {
+        exit(-1);
+    }
 #endif
     //ctor
 }
