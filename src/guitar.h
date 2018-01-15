@@ -110,9 +110,8 @@ private:
 #endif    
 
 #ifdef ALSA_SUPPORT
-    struct pollfd *mPollFds;
-    int mPollMax, in_port, out_port;
-    snd_seq_t* GetHandle(void) {return mHandle;}
+    int in_port, out_port;
+    snd_seq_t* GetHandle(void) {return mHandle;}    /* not used */
 
     snd_seq_t* mHandle;             // handle and client for system notification events
     snd_seq_event_t m_ev;           // for sending from fret mouse press & program change

@@ -493,9 +493,6 @@ bool Guitar::init_Alsa()
         return false;
     }
 
-    mPollMax = snd_seq_poll_descriptors_count(mHandle, POLLIN);
-    mPollFds = (struct pollfd *) calloc(mPollMax, sizeof (struct pollfd));
-
     snd_seq_nonblock(mHandle, 1);
     return true;
 }
