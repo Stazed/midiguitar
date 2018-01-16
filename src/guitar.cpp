@@ -655,6 +655,10 @@ void Guitar::jack_shutdown(void *arg)
 
 void Guitar::JackPlayMidiGuitar(jack_midi_event_t *midievent)
 {
+    /* Write full message to buffer for pass thru   */
+    JackSendMessage(midievent->buffer, midievent->size);
+    
+    /* Trigger guitar Fret Board    */
     /* We only care about note on/off and CC which are 3 bytes */
     if(midievent->size != 3)
         return;
@@ -694,44 +698,49 @@ void Guitar::JackPlayMidiGuitar(jack_midi_event_t *midievent)
 
 void Guitar::JackSendMidiNote(uint note, bool On_or_Off)
 {
-    size_t size = 3;
+    const size_t size = 3;
     unsigned char velocity = m_note_on_velocity;
     int nBytes = static_cast<int>(size);
+    jack_midi_data_t    jack_midi_data[size];
 
     if(On_or_Off)
     {
-        m_jack_midi_data[0] = EVENT_NOTE_ON + m_midi_out_channel;
+        jack_midi_data[0] = EVENT_NOTE_ON + m_midi_out_channel;
     }
     else
     {
-        m_jack_midi_data[0] = EVENT_NOTE_OFF + m_midi_out_channel;
+        jack_midi_data[0] = EVENT_NOTE_OFF + m_midi_out_channel;
         velocity = NOTE_OFF_VELOCITY;
     }
-    m_jack_midi_data[1] = note;
-    m_jack_midi_data[2] = velocity;
-    
-    /* printf("midi_data[0] = %d: [1] = %d: [2] = %d\n", m_jack_midi_data[0], m_jack_midi_data[1],m_jack_midi_data[2]);*/
+    jack_midi_data[1] = note;
+    jack_midi_data[2] = velocity;
     
     // Write full message to buffer
-    jack_ringbuffer_write( m_buffMessage, ( const char * ) m_jack_midi_data,
-                           nBytes );
-    jack_ringbuffer_write( m_buffSize, ( char * ) &nBytes, sizeof( nBytes ) );
+    JackSendMessage(jack_midi_data, size);
 }
 
 void Guitar::JackSendProgramChange(uint a_change)
 {
-    size_t size = 2;
+    const size_t size = 2;
     int nBytes = static_cast<int>(size);
+    jack_midi_data_t    jack_midi_data[size];
     
-    m_jack_midi_data[0] = EVENT_PROGRAM_CHANGE + m_midi_out_channel;
-    m_jack_midi_data[1] = a_change;
+    jack_midi_data[0] = EVENT_PROGRAM_CHANGE + m_midi_out_channel;
+    jack_midi_data[1] = a_change;
     
     // Write full message to buffer
-    jack_ringbuffer_write( m_buffMessage, ( const char * ) m_jack_midi_data,
+    JackSendMessage(jack_midi_data, size);
+}
+
+void Guitar::JackSendMessage(jack_midi_data_t *a_message, size_t size)
+{
+    int nBytes = static_cast<int>(size);
+
+    jack_ringbuffer_write( m_buffMessage, ( const char * ) a_message,
                            nBytes );
     jack_ringbuffer_write( m_buffSize, ( char * ) &nBytes, sizeof( nBytes ) );
-
 }
+
 #endif  // JACK_SUPPORT
 
 float Guitar::fret_distance(int num_fret)

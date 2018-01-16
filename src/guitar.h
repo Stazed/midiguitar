@@ -122,7 +122,6 @@ private:
 #endif
     
 #ifdef JACK_SUPPORT
-    jack_midi_data_t    m_jack_midi_data[3];
     jack_port_t         *m_jack_midi_out_port;
     jack_port_t         *m_jack_midi_in_port;
     jack_client_t       *m_jack_client;
@@ -135,6 +134,7 @@ private:
     void JackPlayMidiGuitar(jack_midi_event_t *midievent);
     void JackSendMidiNote(uint note, bool On_or_Off);
     void JackSendProgramChange(uint a_change);
+    void JackSendMessage(jack_midi_data_t *a_message, size_t size);
 #endif
 
     std::string m_client_name;
