@@ -79,8 +79,6 @@ private:
     Fl_Spinner      *m_channel_out_spinner;
     Fl_Slider       *m_velocity_slider;
     
-    std::string m_windowLabel;
-
     void cb_reset_callback(void* Gptr);
     static void reset_callback(Fl_Button*, void*);
     
@@ -111,8 +109,8 @@ private:
     static void string_callback(Fl_Button*, void*);
     
 #ifdef RTMIDI_SUPPORT
-    RtMidiIn  *m_midiIn;
-    RtMidiOut *m_midiOut;
+    RtMidiIn    *m_midiIn;
+    RtMidiOut   *m_midiOut;
     std::vector<unsigned char> m_message;
     
     bool init_rt_midi();
@@ -152,7 +150,8 @@ private:
     void JackSendMessage(jack_midi_data_t *a_message, size_t size);
 #endif
 
-    std::string m_client_name;
+    std::string     m_windowLabel;
+    std::string     m_client_name;
 
     uint m_note_array[6][25];
     int storeFretLocation[7];

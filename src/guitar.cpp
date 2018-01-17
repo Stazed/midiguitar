@@ -840,6 +840,8 @@ void Guitar::triggerFretNotes()
 void Guitar::adjust_label_sizes()
 {
     int window_h = this->h();
+    int label_size;
+    
     if(window_h > (m_window_size_h + 50) || window_h < (m_window_size_h - 50))
     {
         int adjust = 0;
@@ -853,72 +855,41 @@ void Guitar::adjust_label_sizes()
             adjust = -1;
         }
         
-        int label_size = m_reset_button->labelsize();
-        m_reset_button->labelsize(label_size + adjust);
-        
-        label_size = m_midi_in_group->labelsize();
-        m_midi_in_group->labelsize(label_size + adjust);
-
-        label_size = m_control_button->labelsize();
-        m_control_button->labelsize(label_size + adjust);
-        m_control_button->redraw();
-
-        label_size = m_transpose_spinner->labelsize();
-        m_transpose_spinner->labelsize(label_size + adjust);
-        int text_size = m_transpose_spinner->textsize();
-        m_transpose_spinner->textsize(text_size + adjust);
-        m_transpose_spinner->redraw();
-
-        label_size = m_channel_in_spinner->labelsize();
-        m_channel_in_spinner->labelsize(label_size + adjust);
-        text_size = m_channel_in_spinner->textsize();
-        m_channel_in_spinner->textsize(text_size + adjust);
-        m_channel_in_spinner->redraw();
-    
-        label_size = m_midi_out_group->labelsize();
-        m_midi_out_group->labelsize(label_size + adjust);
-        m_midi_out_group->redraw();
-        
-        label_size = m_program_change_spinner->labelsize();
-        m_program_change_spinner->labelsize(label_size + adjust);
-        text_size = m_program_change_spinner->textsize();
-        m_program_change_spinner->textsize(text_size + adjust);
-        m_program_change_spinner->redraw();
-                
-        label_size = m_channel_out_spinner->labelsize();
-        m_channel_out_spinner->labelsize(label_size + adjust);
-        text_size = m_channel_out_spinner->textsize();
-        m_channel_out_spinner->textsize(text_size + adjust);
-        m_channel_out_spinner->redraw();
-                
-        label_size = m_velocity_slider->labelsize();
-        m_velocity_slider->labelsize(label_size + adjust);
-        m_velocity_slider->redraw();
-        
-        label_size = m_fret_numbers[0]->labelsize();
-        for(int i = 0; i < 25; ++i )
+        for (int t=0; t < this->children(); t++)
         {
-            m_fret_numbers[i]->labelsize(label_size + adjust);
-            m_fret_numbers[i]->redraw();
-        }
-        
-        label_size = m_gtr_string[0]->labelsize();
-        int string_num_size = m_string_numbers[0]->labelsize();
-        for (int i = 0; i < 6; i++)
-        {
-            m_gtr_string[i]->labelsize(label_size + adjust);
-            m_string_numbers[i]->labelsize(string_num_size + adjust);
-            m_gtr_string[i]->redraw();
-            m_string_numbers[i]->redraw();
-        }
-        
-        for(int i = 0; i < 150; ++i)
-        {
-            label_size = m_fret[i]->labelsize();
-            m_fret[i]->labelsize(label_size + adjust);
-            m_fret[i]->redraw();
+            Fl_Widget *w = this->child(t);
+            
+            if (w->as_group())
+            {
+                Fl_Group *g = (Fl_Group *)w;
+                label_size = g->labelsize();
+                label_size += adjust;
+                g->labelsize(label_size);
+            
+                for(int i = 0; i < g->children(); i++)
+                {
+                    Fl_Widget *c = g->child(i);
+                    label_size = c->labelsize();
+                    label_size += adjust;
+                    c->labelsize(label_size);
+                    if(c == m_transpose_spinner || c == m_channel_in_spinner ||
+                       c == m_program_change_spinner || c == m_channel_out_spinner)
+                    {
+                        Fl_Spinner *s = (Fl_Spinner *)c;
+                        label_size = s->textsize();
+                        label_size += adjust;
+                        s->textsize(label_size);
+                    }
+                }
+            }else
+            {
+                label_size = w->labelsize();
+                label_size += adjust;
+                w->labelsize(label_size);
+            }
         }
         m_window_size_h = window_h;
+        Fl::redraw();
     }
 }
 
