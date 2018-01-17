@@ -61,8 +61,23 @@ class Guitar : public Fl_Double_Window
 {
 private:
     
-    Fl_Button       *gtString[7];
-    Fret            *fret[151];
+    Fl_Button       *m_gtr_string[7];
+    Fret            *m_fret[151];
+    Fl_Text_Display *m_fret_numbers[25];
+    Fl_Text_Display *m_string_numbers[7];
+    Fl_Button       *m_reset_button;
+
+    /* Midi in group */
+    Fl_Group        *m_midi_in_group;
+    Fl_Button       *m_control_button;
+    Fl_Spinner      *m_transpose_spinner;
+    Fl_Spinner      *m_channel_in_spinner;
+
+    /* Midi out group */
+    Fl_Group        *m_midi_out_group;
+    Fl_Spinner      *m_program_change_spinner;
+    Fl_Spinner      *m_channel_out_spinner;
+    Fl_Slider       *m_velocity_slider;
     
     std::string m_windowLabel;
 
@@ -153,6 +168,7 @@ private:
     char m_midi_out_channel;
     char m_midi_in_channel;
     char m_note_on_velocity;
+    int m_window_size_h;
 
 public:
     Guitar(uint a_type, uint a_CC, std::string name, uint a_channel);
@@ -168,6 +184,7 @@ public:
 
     void Timeout(void);
     void triggerFretNotes();
+    void adjust_label_sizes();
 
     void stringToggle(int gString);
 

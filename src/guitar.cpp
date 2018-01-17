@@ -44,7 +44,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_last_focus_fret(NO_FRET),
     m_midi_out_channel(a_channel),
     m_midi_in_channel(0),
-    m_note_on_velocity(NOTE_ON_VELOCITY)
+    m_note_on_velocity(NOTE_ON_VELOCITY),
+    m_window_size_h(280)
 #ifdef RTMIDI_SUPPORT
     ,m_midiIn(0)
     ,m_midiOut(0)
@@ -56,92 +57,92 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         
 {
     {
-        Fl_Button* o = new Fl_Button(50, 15, 70, 45, "Reset");
-        o->tooltip("Press button to clear all CC values and previous note calculation.\n"
+        m_reset_button = new Fl_Button(50, 15, 70, 45, "Reset");
+        m_reset_button->tooltip("Press button to clear all CC values and previous note calculation.\n"
                    "Also, note OFF will be sent to all fret locations.");
-        o->color(FL_DARK_RED);
-        o->selection_color((Fl_Color) 135);
-        o->labelcolor(FL_WHITE);
-        o->callback((Fl_Callback*) reset_callback, this);
+        m_reset_button->color(FL_DARK_RED);
+        m_reset_button->selection_color((Fl_Color) 135);
+        m_reset_button->labelcolor(FL_WHITE);
+        m_reset_button->callback((Fl_Callback*) reset_callback, this);
     } // Fl_Button* o
     
-    {Fl_Group* midi_in_group = new Fl_Group(145, 13, 250, 51, "Midi In");
-        midi_in_group->labelsize(10);
-        midi_in_group->box(FL_BORDER_BOX);
+    {m_midi_in_group = new Fl_Group(145, 13, 250, 51, "Midi In");
+        m_midi_in_group->labelsize(10);
+        m_midi_in_group->box(FL_BORDER_BOX);
         {
-            Fl_Button* o = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
-            o->type(1);
-            o->tooltip("Press to stop calculation of nearest fret.\n"
+            m_control_button = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
+            m_control_button->type(1);
+            m_control_button->tooltip("Press to stop calculation of nearest fret.\n"
                        "If pressed all possible note locations will be triggered.");
-            o->color(FL_GREEN);
-            o->selection_color(FL_FOREGROUND_COLOR);
-            o->callback((Fl_Callback*) control_callback, this);
-        } // Fl_Button* o
+            m_control_button->color(FL_GREEN);
+            m_control_button->selection_color(FL_FOREGROUND_COLOR);
+            m_control_button->callback((Fl_Callback*) control_callback, this);
+        } // Fl_Button* m_control_button
         {
-            Fl_Spinner* o = new Fl_Spinner(250, 30, 40, 25, "Transpose");
-            o->minimum(-24);
-            o->maximum(24);
-            o->tooltip("Selected value will adjust incoming midi note up or down.");
-            o->value(m_transpose);
-            o->align(Fl_Align(FL_ALIGN_TOP));
-            o->callback((Fl_Callback*) transpose_callback, this);
-        } // Fl_Spinner* o
+            m_transpose_spinner = new Fl_Spinner(250, 30, 40, 25, "Transpose");
+            m_transpose_spinner->minimum(-24);
+            m_transpose_spinner->maximum(24);
+            m_transpose_spinner->tooltip("Selected value will adjust incoming midi note up or down.");
+            m_transpose_spinner->value(m_transpose);
+            m_transpose_spinner->align(Fl_Align(FL_ALIGN_TOP));
+            m_transpose_spinner->callback((Fl_Callback*) transpose_callback, this);
+        } // Fl_Spinner* m_transpose_spinner
         {
-            Fl_Spinner* s = new Fl_Spinner(330, 30, 40, 25, "Channel");
-            s->minimum(0);
-            s->maximum(16);
-            s->tooltip("Enter the midi channel to receive input.\n"
+            m_channel_in_spinner = new Fl_Spinner(330, 30, 40, 25, "Channel");
+            m_channel_in_spinner->minimum(0);
+            m_channel_in_spinner->maximum(16);
+            m_channel_in_spinner->tooltip("Enter the midi channel to receive input.\n"
                        "Zero '0' means all channels.");
-            s->value(m_midi_in_channel);
-            s->align(Fl_Align(FL_ALIGN_TOP));
-            s->callback((Fl_Callback*) in_channel_callback, this);
-        } // Fl_Spinner* o
-        midi_in_group->end();   // Must remember to do this or everything after group declaration is included!
-        Fl_Group::current()->resizable(midi_in_group);
+            m_channel_in_spinner->value(m_midi_in_channel);
+            m_channel_in_spinner->align(Fl_Align(FL_ALIGN_TOP));
+            m_channel_in_spinner->callback((Fl_Callback*) in_channel_callback, this);
+        } // Fl_Spinner* m_channel_in_spinner
+        m_midi_in_group->end();   // Must remember to do this or everything after group declaration is included!
+        Fl_Group::current()->resizable(m_midi_in_group);
     }
     
-    {Fl_Group* midi_out_group = new Fl_Group(420, 13, 365, 51, "Midi Out");
-        midi_out_group->labelsize(10);
-        midi_out_group->box(FL_BORDER_BOX);
+    {m_midi_out_group = new Fl_Group(420, 13, 365, 51, "Midi Out");
+        m_midi_out_group->labelsize(10);
+        m_midi_out_group->box(FL_BORDER_BOX);
         {
-            Fl_Spinner* o = new Fl_Spinner(435, 30, 50, 25, "Program");
-            o->minimum(0);
-            o->maximum(127);
-            o->tooltip("Set program change");
-            o->value(0);
-            o->align(Fl_Align(FL_ALIGN_TOP));
-            o->callback((Fl_Callback*) program_callback, this);
-        } // Fl_Spinner* o
+            m_program_change_spinner = new Fl_Spinner(435, 30, 50, 25, "Program");
+            m_program_change_spinner->minimum(0);
+            m_program_change_spinner->maximum(127);
+            m_program_change_spinner->tooltip("Set program change");
+            m_program_change_spinner->value(0);
+            m_program_change_spinner->align(Fl_Align(FL_ALIGN_TOP));
+            m_program_change_spinner->callback((Fl_Callback*) program_callback, this);
+        } // Fl_Spinner* m_program_change_spinner
         {
-            Fl_Spinner* s = new Fl_Spinner(520, 30, 40, 25, "Channel");
-            s->minimum(1);
-            s->maximum(16);
-            s->tooltip("Enter/select the midi channel to send output");
-            s->value(m_midi_out_channel+1);
-            s->align(Fl_Align(FL_ALIGN_TOP));
-            s->callback((Fl_Callback*) out_channel_callback, this);
-        } // Fl_Spinner* o
+            m_channel_out_spinner = new Fl_Spinner(520, 30, 40, 25, "Channel");
+            m_channel_out_spinner->minimum(1);
+            m_channel_out_spinner->maximum(16);
+            m_channel_out_spinner->tooltip("Enter/select the midi channel to send output");
+            m_channel_out_spinner->value(m_midi_out_channel+1);
+            m_channel_out_spinner->align(Fl_Align(FL_ALIGN_TOP));
+            m_channel_out_spinner->callback((Fl_Callback*) out_channel_callback, this);
+        } // Fl_Spinner* m_channel_out_spinner
         { 
-            Fl_Slider* o = new Fl_Slider(600, 35, 145, 17, "Velocity");
-            o->align(Fl_Align(FL_ALIGN_TOP));
-            o->type(FL_HORIZONTAL);
-            o->minimum(0);
-            o->maximum(127);
-            o->value((double)NOTE_ON_VELOCITY);
-            o->callback((Fl_Callback*) velocity_callback, this);
+            m_velocity_slider = new Fl_Slider(600, 35, 145, 17, "Velocity");
+            m_velocity_slider->align(Fl_Align(FL_ALIGN_TOP));
+            m_velocity_slider->type(FL_HORIZONTAL);
+            m_velocity_slider->minimum(0);
+            m_velocity_slider->maximum(127);
+            m_velocity_slider->value((double)NOTE_ON_VELOCITY);
+            m_velocity_slider->callback((Fl_Callback*) velocity_callback, this);
         } // Fl_Slider* o
-        midi_out_group->end();   // Must remember to do this or everything after group declaration is included!
-        Fl_Group::current()->resizable(midi_out_group);
+        m_midi_out_group->end();   // Must remember to do this or everything after group declaration is included!
+        Fl_Group::current()->resizable(m_midi_out_group);
     }
     
     /* Fret numbering */
     int n = 0;
 
     {
-        Fl_Text_Display* b = new Fl_Text_Display(65, 90, 15, 15); // first OPEN string position
-        b->box(FL_NO_BOX);
-        b->labelsize(9);
-        b->copy_label(SSTR(n).c_str()); // position 0
+        m_fret_numbers[n] = new Fl_Text_Display(65, 90, 15, 15); // first OPEN string position
+        m_fret_numbers[n]->box(FL_NO_BOX);
+        m_fret_numbers[n]->labelsize(9);
+        m_fret_numbers[n]->copy_label(SSTR(n).c_str()); // position 0
         n++;
     }
     for (int x = 0; x < 24; x++) // the numbered fret positions
@@ -150,10 +151,10 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         float distance2 = Guitar::fret_distance(x + 1);
         float X = distance1 + ((distance2 - distance1) / 2);
 
-        Fl_Text_Display* b = new Fl_Text_Display((X * 60.4) + 95, 90, 15, 15);
-        b->box(FL_NO_BOX);
-        b->labelsize(9);
-        b->copy_label(SSTR(n).c_str()); // n = 1 to 24
+        m_fret_numbers[n] = new Fl_Text_Display((X * 60.4) + 95, 90, 15, 15);
+        m_fret_numbers[n]->box(FL_NO_BOX);
+        m_fret_numbers[n]->labelsize(9);
+        m_fret_numbers[n]->copy_label(SSTR(n).c_str()); // n = 1 to 24
         n++;
     }
     
@@ -167,14 +168,14 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         {
             j = 5 - j;
         }
-        gtString[j] = new Fl_Button(30, y, 15, 15);
-        gtString[j]->color(FL_BLACK);
+        m_gtr_string[j] = new Fl_Button(30, y, 15, 15);
+        m_gtr_string[j]->color(FL_BLACK);
         char temp[2] = {};
         temp[0] = note_string[j];
-        gtString[j]->copy_label(temp);
-        gtString[j]->selection_color(FL_GREEN);
-        gtString[j]->align(Fl_Align(FL_ALIGN_LEFT));
-        gtString[j]->callback((Fl_Callback*) string_callback, this);
+        m_gtr_string[j]->copy_label(temp);
+        m_gtr_string[j]->selection_color(FL_GREEN);
+        m_gtr_string[j]->align(Fl_Align(FL_ALIGN_LEFT));
+        m_gtr_string[j]->callback((Fl_Callback*) string_callback, this);
         y += c_global_fret_height;
     }
     
@@ -182,9 +183,9 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     y = 100;
     for (int i = 0; i < 6; i++)
     {
-        Fl_Text_Display* o = new Fl_Text_Display(17, y, 15, 15);
-        o->box(FL_NO_BOX);
-        o->labelsize(9);
+        m_string_numbers[i] = new Fl_Text_Display(17, y, 15, 15);
+        m_string_numbers[i]->box(FL_NO_BOX);
+        m_string_numbers[i]->labelsize(9);
 
         int label = i + 1;
         if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
@@ -192,9 +193,9 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             label = 7 - label;
         }
 
-        o->copy_label(SSTR(label).c_str()); // i = 1 to 6
-        o->selection_color(FL_BLACK);
-        o->align(Fl_Align(FL_ALIGN_LEFT));
+        m_string_numbers[i]->copy_label(SSTR(label).c_str()); // i = 1 to 6
+        m_string_numbers[i]->selection_color(FL_BLACK);
+        m_string_numbers[i]->align(Fl_Align(FL_ALIGN_LEFT));
         y += c_global_fret_height;
     }
   
@@ -206,13 +207,14 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     {
         for (int y = 0; y < 6; y++)
         {
-            fret[n] = new Fret(50, (y + 1) * c_global_fret_height + (y >= 6 ? 12 * 40 : 75), 45, c_global_fret_height, "Open");
-            fret[n]->color(FL_YELLOW);
-            fret[n]->selection_color(FL_RED);
-            fret[n]->when(FL_WHEN_CHANGED);
-            fret[n]->align(FL_ALIGN_CLIP);
-            fret[n]->callback((Fl_Callback*) fret_callback, this);
-            guitar_frets->add(fret[n]);
+            m_fret[n] = new Fret(50, (y + 1) * c_global_fret_height + (y >= 6 ? 12 * 40 : 75), 45, c_global_fret_height, "Open");
+            m_fret[n]->color(FL_YELLOW);
+            m_fret[n]->selection_color(FL_GREEN);
+            m_fret[n]->when(FL_WHEN_CHANGED);
+            m_fret[n]->align(FL_ALIGN_CLIP);
+            m_fret[n]->labelsize(8);
+            m_fret[n]->callback((Fl_Callback*) fret_callback, this);
+            guitar_frets->add(m_fret[n]);
             n++;
             for (int x = 0; x < 24; x++) // The actual frets
             {
@@ -220,16 +222,16 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
                 float distance2 = Guitar::fret_distance(x + 1);
 
                 float fret_W = distance2 - distance1;
-                fret[n] = new Fret((distance1 * c_global_pixel_scale) + 95,
+                m_fret[n] = new Fret((distance1 * c_global_pixel_scale) + 95,
                                    (y + 1) * c_global_fret_height + (y >= 6 ? 12 * 40 : 75),
                                    fret_W*c_global_pixel_scale, c_global_fret_height);
-                fret[n]->color((Fl_Color) 18);
-                fret[n]->selection_color(FL_RED);
-                fret[n]->when(FL_WHEN_CHANGED);
-                fret[n]->align(FL_ALIGN_CLIP);
-                fret[n]->labelsize(10);
-                fret[n]->callback((Fl_Callback*) fret_callback, this);
-                guitar_frets->add(fret[n]);
+                m_fret[n]->color((Fl_Color) 18);
+                m_fret[n]->selection_color(FL_GREEN);
+                m_fret[n]->when(FL_WHEN_CHANGED);
+                m_fret[n]->align(FL_ALIGN_CLIP);
+                m_fret[n]->labelsize(8);
+                m_fret[n]->callback((Fl_Callback*) fret_callback, this);
+                guitar_frets->add(m_fret[n]);
                 n++;
             }
         }
@@ -759,7 +761,7 @@ void Guitar::marker(int x, int y)
 void Guitar::reset_all_controls()
 {
     for (int i = 0; i < 6; i++)
-        gtString[i]->value(0);
+        m_gtr_string[i]->value(0);
     for (int i = 0; i < 127; i++)
         fretToggle(i, false);
 
@@ -788,6 +790,7 @@ void Guitar::Timeout(void)
     /* Alsa midi incoming messages */
     alsaGetMidiMessages();
 #endif
+    adjust_label_sizes();
 
     Fl::repeat_timeout(0.005, Guitar::TimeoutStatic, this);
 }
@@ -807,13 +810,13 @@ void Guitar::triggerFretNotes()
             }
         } else
         {
-            if (Fl::event_inside(fret[m_last_focus_fret]))
+            if (Fl::event_inside(m_fret[m_last_focus_fret]))
             {
                 return; // if still inside previous fret then don't change
             } else
             {
-                fret[m_last_focus_fret]->value(0); // moved outside of fret so shut it off
-                cb_fret_callback(fret[m_last_focus_fret]);
+                m_fret[m_last_focus_fret]->value(0); // moved outside of fret so shut it off
+                cb_fret_callback(m_fret[m_last_focus_fret]);
             }
 
             Fret *f = get_adjacent_fret(m_last_focus_fret); // find the new fret we moved to if any
@@ -828,15 +831,100 @@ void Guitar::triggerFretNotes()
 
     if (m_last_focus_fret != NO_FRET && !Fl::event_button1()) // if released left mouse button
     {
-        fret[m_last_focus_fret]->value(0); // then shut off the last fret we played
-        cb_fret_callback(fret[m_last_focus_fret]);
+        m_fret[m_last_focus_fret]->value(0); // then shut off the last fret we played
+        cb_fret_callback(m_fret[m_last_focus_fret]);
         m_last_focus_fret = NO_FRET;
     }                                   
 }
 
+void Guitar::adjust_label_sizes()
+{
+    int window_h = this->h();
+    if(window_h > (m_window_size_h + 50) || window_h < (m_window_size_h - 50))
+    {
+        int adjust = 0;
+        if(window_h > (m_window_size_h + 50))
+        {
+            adjust = 1;
+        }
+        
+        if(window_h < (m_window_size_h + 50))
+        {
+            adjust = -1;
+        }
+        
+        int label_size = m_reset_button->labelsize();
+        m_reset_button->labelsize(label_size + adjust);
+        
+        label_size = m_midi_in_group->labelsize();
+        m_midi_in_group->labelsize(label_size + adjust);
+
+        label_size = m_control_button->labelsize();
+        m_control_button->labelsize(label_size + adjust);
+        m_control_button->redraw();
+
+        label_size = m_transpose_spinner->labelsize();
+        m_transpose_spinner->labelsize(label_size + adjust);
+        int text_size = m_transpose_spinner->textsize();
+        m_transpose_spinner->textsize(text_size + adjust);
+        m_transpose_spinner->redraw();
+
+        label_size = m_channel_in_spinner->labelsize();
+        m_channel_in_spinner->labelsize(label_size + adjust);
+        text_size = m_channel_in_spinner->textsize();
+        m_channel_in_spinner->textsize(text_size + adjust);
+        m_channel_in_spinner->redraw();
+    
+        label_size = m_midi_out_group->labelsize();
+        m_midi_out_group->labelsize(label_size + adjust);
+        m_midi_out_group->redraw();
+        
+        label_size = m_program_change_spinner->labelsize();
+        m_program_change_spinner->labelsize(label_size + adjust);
+        text_size = m_program_change_spinner->textsize();
+        m_program_change_spinner->textsize(text_size + adjust);
+        m_program_change_spinner->redraw();
+                
+        label_size = m_channel_out_spinner->labelsize();
+        m_channel_out_spinner->labelsize(label_size + adjust);
+        text_size = m_channel_out_spinner->textsize();
+        m_channel_out_spinner->textsize(text_size + adjust);
+        m_channel_out_spinner->redraw();
+                
+        label_size = m_velocity_slider->labelsize();
+        m_velocity_slider->labelsize(label_size + adjust);
+        m_velocity_slider->redraw();
+        
+        label_size = m_fret_numbers[0]->labelsize();
+        for(int i = 0; i < 25; ++i )
+        {
+            m_fret_numbers[i]->labelsize(label_size + adjust);
+            m_fret_numbers[i]->redraw();
+        }
+        
+        label_size = m_gtr_string[0]->labelsize();
+        int string_num_size = m_string_numbers[0]->labelsize();
+        for (int i = 0; i < 6; i++)
+        {
+            m_gtr_string[i]->labelsize(label_size + adjust);
+            m_string_numbers[i]->labelsize(string_num_size + adjust);
+            m_gtr_string[i]->redraw();
+            m_string_numbers[i]->redraw();
+        }
+        
+        for(int i = 0; i < 150; ++i)
+        {
+            label_size = m_fret[i]->labelsize();
+            m_fret[i]->labelsize(label_size + adjust);
+            m_fret[i]->redraw();
+        }
+        m_window_size_h = window_h;
+    }
+}
+
 void Guitar::stringToggle(int gString)
 {
-    cb_string_callback(gtString[gString]);
+    cb_string_callback(m_gtr_string[gString]);
 }
 
 void Guitar::fretToggle(uint note, bool on_off)
@@ -869,7 +957,7 @@ void Guitar::fretToggle(uint note, bool on_off)
                 {
                     if (m_have_string_toggle) // user supplied CC for string
                     {
-                        if (gtString[I]->value() == 1) // if the string is on and...
+                        if (m_gtr_string[I]->value() == 1) // if the string is on and...
                         {
                             toggle_fret((I * 25) + J, on_off);
                             stringToggle(I); // shut off string after we get it
@@ -910,18 +998,18 @@ void Guitar::toggle_fret(int location, bool on_off)
     else
         string *= 25;
 
-    fret[string + nfret]->value(on_off);
+    m_fret[string + nfret]->value(on_off);
 
     if (on_off) // true is note ON, so display note text
     {
-        fret[string + nfret]->copy_label(c_key_table_text[location]);
+        m_fret[string + nfret]->copy_label(c_key_table_text[location]);
     } else // clear note text
     {
         std::string label = "";
         if (nfret == 0)
             label = "Open";
 
-        fret[string + nfret]->copy_label(label.c_str());
+        m_fret[string + nfret]->copy_label(label.c_str());
     }
 }
 
@@ -968,7 +1056,7 @@ void Guitar::cb_fret_callback(Fret* b)
 {
     for (int i = 0; i < 150; i++)
     {
-        if (b == fret[i])
+        if (b == m_fret[i])
         {
             m_last_focus_fret = i;
             int string = i / 25;
@@ -981,9 +1069,9 @@ void Guitar::cb_fret_callback(Fret* b)
                 text_array = (string * 25) + nfret;
             }
 
-            if (fret[i]->value() == 1) // if ON note - display text & set midi note on
+            if (m_fret[i]->value() == 1) // if ON note - display text & set midi note on
             {
-                fret[i]->copy_label(c_key_table_text[text_array]);
+                m_fret[i]->copy_label(c_key_table_text[text_array]);
 #ifdef ALSA_SUPPORT
                 alsaSendMidiNote(m_note_array[string][nfret], true);
 #endif    
@@ -999,7 +1087,7 @@ void Guitar::cb_fret_callback(Fret* b)
                 if (nfret == 0)
                     label = "Open";
 
-                fret[i]->copy_label(label.c_str());
+                m_fret[i]->copy_label(label.c_str());
 #ifdef ALSA_SUPPORT
                 alsaSendMidiNote(m_note_array[string][nfret], false);
 #endif      
@@ -1020,10 +1108,10 @@ Fret *Guitar::get_drag_fret()
 {
     for (int i = 0; i < 150; i++)
     {
-        if (Fl::event_inside(fret[i]))
+        if (Fl::event_inside(m_fret[i]))
         {
             m_last_focus_fret = i;
-            return fret[i];
+            return m_fret[i];
         }
     }
     return NULL;
@@ -1115,8 +1203,8 @@ int Guitar::get_fret_center(uint x_or_y, uint h_or_w)
 
 int Guitar::calculate_closest_fret()
 {
-    int last_X = get_fret_center(fret[m_last_used_fret]->x(), fret[m_last_used_fret]->h());
-    int last_Y = get_fret_center(fret[m_last_used_fret]->y(), fret[m_last_used_fret]->w());
+    int last_X = get_fret_center(m_fret[m_last_used_fret]->x(), m_fret[m_last_used_fret]->h());
+    int last_Y = get_fret_center(m_fret[m_last_used_fret]->y(), m_fret[m_last_used_fret]->w());
 
     // printf("last_x %d: last_y %d\n",last_X,last_Y);
 
@@ -1133,8 +1221,8 @@ int Guitar::calculate_closest_fret()
         if (closest_fret == NO_FRET)
             closest_fret = storeFretLocation[i];
 
-        int X = get_fret_center(fret[storeFretLocation[i]]->x(), fret[storeFretLocation[i]]->h());
-        int Y = get_fret_center(fret[storeFretLocation[i]]->y(), fret[storeFretLocation[i]]->w());
+        int X = get_fret_center(m_fret[storeFretLocation[i]]->x(), m_fret[storeFretLocation[i]]->h());
+        int Y = get_fret_center(m_fret[storeFretLocation[i]]->y(), m_fret[storeFretLocation[i]]->w());
 
         // printf("X %d: Y %d\n",X,Y);
 
@@ -1171,64 +1259,64 @@ Fret *Guitar::get_adjacent_fret(int last_fret)
 {
     if (last_fret + 1 < 150)
     {
-        if (Fl::event_inside(fret[last_fret + 1]))
+        if (Fl::event_inside(m_fret[last_fret + 1]))
         {
-            return fret[last_fret + 1];
+            return m_fret[last_fret + 1];
         }
     }
     if (last_fret - 1 > 0)
     {
-        if (Fl::event_inside(fret[last_fret - 1]))
+        if (Fl::event_inside(m_fret[last_fret - 1]))
         {
-            return fret[last_fret - 1];
+            return m_fret[last_fret - 1];
         }
     }
 
     if (last_fret - 26 > 0)
     {
-        if (Fl::event_inside(fret[last_fret - 26]))
+        if (Fl::event_inside(m_fret[last_fret - 26]))
         {
-            return fret[last_fret - 26];
+            return m_fret[last_fret - 26];
         }
     }
 
     if (last_fret + 26 < 150)
     {
-        if (Fl::event_inside(fret[last_fret + 26]))
+        if (Fl::event_inside(m_fret[last_fret + 26]))
         {
-            return fret[last_fret + 26];
+            return m_fret[last_fret + 26];
         }
     }
 
     if (last_fret - 25 > 0)
     {
-        if (Fl::event_inside(fret[last_fret - 25]))
+        if (Fl::event_inside(m_fret[last_fret - 25]))
         {
-            return fret[last_fret - 25];
+            return m_fret[last_fret - 25];
         }
     }
 
     if (last_fret + 25 < 150)
     {
-        if (Fl::event_inside(fret[last_fret + 25]))
+        if (Fl::event_inside(m_fret[last_fret + 25]))
         {
-            return fret[last_fret + 25];
+            return m_fret[last_fret + 25];
         }
     }
 
     if (last_fret - 24 > 0)
     {
-        if (Fl::event_inside(fret[last_fret - 24]))
+        if (Fl::event_inside(m_fret[last_fret - 24]))
         {
-            return fret[last_fret - 24];
+            return m_fret[last_fret - 24];
         }
     }
 
     if (last_fret + 24 < 150)
     {
-        if (Fl::event_inside(fret[last_fret + 24]))
+        if (Fl::event_inside(m_fret[last_fret + 24]))
         {
-            return fret[last_fret + 24];
+            return m_fret[last_fret + 24];
         }
     }
 
