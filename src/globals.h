@@ -37,8 +37,18 @@ const unsigned char  NOTE_ON_VELOCITY       = 100;  // default
 const unsigned char  NOTE_OFF_VELOCITY      = 64;
 const int            NO_FRET                = -1;
 
+const uint c_global_min_window_h            = 280;
 const uint c_global_pixel_scale             = 61;
 const uint c_global_fret_height             = 20;
+
+const uint c_global_label_resize_increment  = 40;
+const uint c_global_min_group_label_size    = 10;
+const uint c_global_min_label_size          = 14;
+const uint c_global_min_spin_text_size      = 14;
+const uint c_global_min_number_label_size   = 9;
+const uint c_global_min_fret_label_size     = 8;
+const uint c_global_min_marker_size         = 60;
+
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()

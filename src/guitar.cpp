@@ -31,7 +31,7 @@ Fret::Fret(int x, int y, int w, int h, const char *label) :
 }
 
 Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
-    Fl_Double_Window(1020, 280, "Midi Guitar Player"),
+    Fl_Double_Window(1020, c_global_min_window_h, "Midi Guitar Player"),
     m_windowLabel("Midi Guitar "),
     m_client_name(name),
     m_have_string_toggle(false),
@@ -45,7 +45,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_midi_out_channel(a_channel),
     m_midi_in_channel(0),
     m_note_on_velocity(NOTE_ON_VELOCITY),
-    m_window_size_h(280)
+    m_window_size_h(c_global_min_window_h)
 #ifdef RTMIDI_SUPPORT
     ,m_midiIn(0)
     ,m_midiOut(0)
@@ -63,11 +63,12 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         m_reset_button->color(FL_DARK_RED);
         m_reset_button->selection_color((Fl_Color) 135);
         m_reset_button->labelcolor(FL_WHITE);
+        m_reset_button->labelsize(c_global_min_label_size);
         m_reset_button->callback((Fl_Callback*) reset_callback, this);
     } // Fl_Button* o
     
     {m_midi_in_group = new Fl_Group(145, 13, 250, 51, "Midi In");
-        m_midi_in_group->labelsize(10);
+        m_midi_in_group->labelsize(c_global_min_group_label_size);
         m_midi_in_group->box(FL_BORDER_BOX);
         {
             m_control_button = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
@@ -76,6 +77,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
                        "If pressed all possible note locations will be triggered.");
             m_control_button->color(FL_GREEN);
             m_control_button->selection_color(FL_FOREGROUND_COLOR);
+            m_control_button->labelsize(c_global_min_label_size);
             m_control_button->callback((Fl_Callback*) control_callback, this);
         } // Fl_Button* m_control_button
         {
@@ -85,6 +87,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             m_transpose_spinner->tooltip("Selected value will adjust incoming midi note up or down.");
             m_transpose_spinner->value(m_transpose);
             m_transpose_spinner->align(Fl_Align(FL_ALIGN_TOP));
+            m_transpose_spinner->labelsize(c_global_min_label_size);
             m_transpose_spinner->callback((Fl_Callback*) transpose_callback, this);
         } // Fl_Spinner* m_transpose_spinner
         {
@@ -95,6 +98,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
                        "Zero '0' means all channels.");
             m_channel_in_spinner->value(m_midi_in_channel);
             m_channel_in_spinner->align(Fl_Align(FL_ALIGN_TOP));
+            m_channel_in_spinner->labelsize(c_global_min_label_size);
             m_channel_in_spinner->callback((Fl_Callback*) in_channel_callback, this);
         } // Fl_Spinner* m_channel_in_spinner
         m_midi_in_group->end();   // Must remember to do this or everything after group declaration is included!
@@ -102,7 +106,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     }
     
     {m_midi_out_group = new Fl_Group(420, 13, 365, 51, "Midi Out");
-        m_midi_out_group->labelsize(10);
+        m_midi_out_group->labelsize(c_global_min_group_label_size);
         m_midi_out_group->box(FL_BORDER_BOX);
         {
             m_program_change_spinner = new Fl_Spinner(435, 30, 50, 25, "Program");
@@ -111,6 +115,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             m_program_change_spinner->tooltip("Set program change");
             m_program_change_spinner->value(0);
             m_program_change_spinner->align(Fl_Align(FL_ALIGN_TOP));
+            m_program_change_spinner->labelsize(c_global_min_label_size);
+            m_program_change_spinner->textsize(c_global_min_spin_text_size);
             m_program_change_spinner->callback((Fl_Callback*) program_callback, this);
         } // Fl_Spinner* m_program_change_spinner
         {
@@ -120,6 +126,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             m_channel_out_spinner->tooltip("Enter/select the midi channel to send output");
             m_channel_out_spinner->value(m_midi_out_channel+1);
             m_channel_out_spinner->align(Fl_Align(FL_ALIGN_TOP));
+            m_channel_out_spinner->labelsize(c_global_min_label_size);
+            m_channel_out_spinner->textsize(c_global_min_spin_text_size);
             m_channel_out_spinner->callback((Fl_Callback*) out_channel_callback, this);
         } // Fl_Spinner* m_channel_out_spinner
         { 
@@ -129,6 +137,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             m_velocity_slider->minimum(0);
             m_velocity_slider->maximum(127);
             m_velocity_slider->value((double)NOTE_ON_VELOCITY);
+            m_velocity_slider->labelsize(c_global_min_label_size);
             m_velocity_slider->callback((Fl_Callback*) velocity_callback, this);
         } // Fl_Slider* o
         m_midi_out_group->end();   // Must remember to do this or everything after group declaration is included!
@@ -141,7 +150,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     {
         m_fret_numbers[n] = new Fl_Text_Display(65, 90, 15, 15); // first OPEN string position
         m_fret_numbers[n]->box(FL_NO_BOX);
-        m_fret_numbers[n]->labelsize(9);
+        m_fret_numbers[n]->labelsize(c_global_min_number_label_size);
         m_fret_numbers[n]->copy_label(SSTR(n).c_str()); // position 0
         n++;
     }
@@ -153,7 +162,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
 
         m_fret_numbers[n] = new Fl_Text_Display((X * 60.4) + 95, 90, 15, 15);
         m_fret_numbers[n]->box(FL_NO_BOX);
-        m_fret_numbers[n]->labelsize(9);
+        m_fret_numbers[n]->labelsize(c_global_min_number_label_size);
         m_fret_numbers[n]->copy_label(SSTR(n).c_str()); // n = 1 to 24
         n++;
     }
@@ -175,6 +184,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
         m_gtr_string[j]->copy_label(temp);
         m_gtr_string[j]->selection_color(FL_GREEN);
         m_gtr_string[j]->align(Fl_Align(FL_ALIGN_LEFT));
+        m_gtr_string[j]->labelsize(c_global_min_label_size);
         m_gtr_string[j]->callback((Fl_Callback*) string_callback, this);
         y += c_global_fret_height;
     }
@@ -185,7 +195,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     {
         m_string_numbers[i] = new Fl_Text_Display(17, y, 15, 15);
         m_string_numbers[i]->box(FL_NO_BOX);
-        m_string_numbers[i]->labelsize(9);
+        m_string_numbers[i]->labelsize(c_global_min_number_label_size);
 
         int label = i + 1;
         if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
@@ -212,7 +222,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
             m_fret[n]->selection_color(FL_GREEN);
             m_fret[n]->when(FL_WHEN_CHANGED);
             m_fret[n]->align(FL_ALIGN_CLIP);
-            m_fret[n]->labelsize(8);
+            m_fret[n]->labelsize(c_global_min_fret_label_size);
             m_fret[n]->callback((Fl_Callback*) fret_callback, this);
             guitar_frets->add(m_fret[n]);
             n++;
@@ -229,7 +239,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
                 m_fret[n]->selection_color(FL_GREEN);
                 m_fret[n]->when(FL_WHEN_CHANGED);
                 m_fret[n]->align(FL_ALIGN_CLIP);
-                m_fret[n]->labelsize(8);
+                m_fret[n]->labelsize(c_global_min_fret_label_size);
                 m_fret[n]->callback((Fl_Callback*) fret_callback, this);
                 guitar_frets->add(m_fret[n]);
                 n++;
@@ -755,7 +765,7 @@ void Guitar::marker(int x, int y)
     Fl_Text_Display* o = new Fl_Text_Display(x, y, 0, 0, ".");
     o->box(FL_UP_FRAME);
     o->labelfont(9);
-    o->labelsize(60);
+    o->labelsize(c_global_min_marker_size);
 }
 
 void Guitar::reset_all_controls()
@@ -842,15 +852,19 @@ void Guitar::adjust_label_sizes()
     int window_h = this->h();
     int label_size;
     
-    if(window_h > (m_window_size_h + 50) || window_h < (m_window_size_h - 50))
+    /* Adjusting by increment works if you resize slowly so that an increment
+     is not bypassed. */
+
+    if(window_h > (m_window_size_h + c_global_label_resize_increment) ||
+       window_h < (m_window_size_h - c_global_label_resize_increment) )
     {
         int adjust = 0;
-        if(window_h > (m_window_size_h + 50))
+        if(window_h > (m_window_size_h + c_global_label_resize_increment))
         {
             adjust = 1;
         }
         
-        if(window_h < (m_window_size_h + 50))
+        if(window_h < (m_window_size_h + c_global_label_resize_increment))
         {
             adjust = -1;
         }
@@ -877,7 +891,7 @@ void Guitar::adjust_label_sizes()
                     {
                         Fl_Spinner *s = (Fl_Spinner *)c;
                         label_size = s->textsize();
-                        label_size += adjust;
+                            label_size += adjust;
                         s->textsize(label_size);
                     }
                 }
