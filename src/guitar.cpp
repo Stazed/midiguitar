@@ -30,7 +30,7 @@ Fret::Fret(int x, int y, int w, int h, const char *label) :
 
 }
 
-Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
+Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool midi_numbers) :
     Fl_Double_Window(1020, c_global_min_window_h, "Midi Guitar Player"),
     m_windowLabel("Midi Guitar "),
     m_client_name(name),
@@ -45,7 +45,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     m_midi_out_channel(a_channel),
     m_midi_in_channel(0),
     m_note_on_velocity(NOTE_ON_VELOCITY),
-    m_window_size_h(c_global_min_window_h)
+    m_window_size_h(c_global_min_window_h),
+    m_midi_numbers(midi_numbers)
 #ifdef RTMIDI_SUPPORT
     ,m_midiIn(0)
     ,m_midiOut(0)
@@ -1042,7 +1043,10 @@ void Guitar::toggle_fret(int location, bool on_off)
 
     if (on_off) // true is note ON, so display note text
     {
-        m_fret[string + nfret]->copy_label(c_key_table_text[location]);
+        if(m_midi_numbers)
+            m_fret[string + nfret]->copy_label(c_key_table_number[location]);
+        else
+            m_fret[string + nfret]->copy_label(c_key_table_text[location]);
     } else // clear note text
     {
         std::string label = "";
@@ -1111,7 +1115,10 @@ void Guitar::cb_fret_callback(Fret* b)
 
             if (m_fret[i]->value() == 1) // if ON note - display text & set midi note on
             {
-                m_fret[i]->copy_label(c_key_table_text[text_array]);
+                if(m_midi_numbers)
+                    m_fret[i]->copy_label(c_key_table_number[text_array]);
+                else
+                    m_fret[i]->copy_label(c_key_table_text[text_array]);
 #ifdef ALSA_SUPPORT
                 alsaSendMidiNote(m_note_array[string][nfret], true);
 #endif    

@@ -32,6 +32,7 @@ static struct
     {"guitar_view_type", required_argument, 0, 't'},
     {"client_name", required_argument, 0, 'n'},
     {"midi_channel", required_argument, 0, 'c'},
+    {"display_midi_numbers", 0, 0, 'm'},
     {0, 0, 0, 0}
 };
 
@@ -42,6 +43,7 @@ int main(int argc, char **argv)
     uint guitar_string_param = 16;
     uint guitar_type = RH_STANDARD_GUITAR;
     uint midi_channel = 0;
+    bool display_midi_numbers = false;
     
     /* parse parameters */
     int c;
@@ -51,7 +53,7 @@ int main(int argc, char **argv)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "hs:t:n:c:", long_options, &option_index);
+        c = getopt_long (argc, argv, "hs:t:n:c:m", long_options, &option_index);
 
         /* Detect the end of the options. */
         if (c == -1)
@@ -72,6 +74,7 @@ int main(int argc, char **argv)
 //                    ", 2 = L/h normal, 3 = L/h mirror\n" );
             printf( "   -n, --client_name <name>: set alsa client name: Default = 'MIDI_Guitar'\n");
             printf( "   -c, --midi_channel: set midi channel for sending notes from fret mouse press (1 to 16)\n");
+            printf( "   -m, --midi_numbers: display midi numbers on fret instead of note letter\n");
             printf( "\n\n\n" );
 
             return EXIT_SUCCESS;
@@ -104,13 +107,16 @@ int main(int argc, char **argv)
                 midi_channel = (atoi( optarg)) - 1; // -1 for user offset
             }
             break;
+        case 'm':
+            display_midi_numbers = true;
+            break;
         }
     }
 
     
     Guitar* MidiGuitar = 0;
 
-    MidiGuitar = new Guitar(guitar_type, guitar_string_param, client_name, midi_channel);
+    MidiGuitar = new Guitar(guitar_type, guitar_string_param, client_name, midi_channel, display_midi_numbers);
     
     MidiGuitar->show();
 

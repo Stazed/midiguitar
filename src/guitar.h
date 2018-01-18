@@ -169,9 +169,10 @@ private:
     char m_midi_in_channel;
     char m_note_on_velocity;
     int m_window_size_h;
+    bool m_midi_numbers;
 
 public:
-    Guitar(uint a_type, uint a_CC, std::string name, uint a_channel);
+    Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool midi_numbers);
     virtual ~Guitar();
 
     float fret_distance(int num_fret);
