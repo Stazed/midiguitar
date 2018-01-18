@@ -66,6 +66,7 @@ private:
     Fl_Text_Display *m_fret_numbers[25];
     Fl_Text_Display *m_string_numbers[7];
     Fl_Button       *m_reset_button;
+    Fl_Text_Display *m_marker[10];
 
     /* Midi in group */
     Fl_Group        *m_midi_in_group;
@@ -174,7 +175,7 @@ public:
     virtual ~Guitar();
 
     float fret_distance(int num_fret);
-    void marker(int x, int y);
+    void marker(int x, int y, int num);
     
     static void TimeoutStatic(void* ptr)
     {

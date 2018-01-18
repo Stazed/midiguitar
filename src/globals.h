@@ -41,7 +41,7 @@ const uint c_global_min_window_h            = 280;
 const uint c_global_pixel_scale             = 61;
 const uint c_global_fret_height             = 20;
 
-const uint c_global_label_resize_increment  = 40;
+const uint c_global_label_resize_increment  = 20;
 const uint c_global_min_group_label_size    = 10;
 const uint c_global_min_label_size          = 14;
 const uint c_global_min_spin_text_size      = 14;

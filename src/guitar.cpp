@@ -248,16 +248,16 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel) :
     }
     guitar_frets->end();    // Must remember to do this or everything after group declaration is included!
 
-    marker(260, 250);
-    marker(372, 250);
-    marker(475, 250);
-    marker(571, 250);
-    marker(688, 250);
-    marker(688, 270);
-    marker(788, 250);
-    marker(844, 250);
-    marker(895, 250);
-    marker(941, 250);
+    marker(260, 250, 0);
+    marker(372, 250, 1);
+    marker(475, 250, 2);
+    marker(571, 250, 3);
+    marker(688, 250, 4);
+    marker(688, 270, 5);
+    marker(788, 250, 6);
+    marker(844, 250, 7);
+    marker(895, 250, 8);
+    marker(941, 250, 9);
     
     this->size_range(1020, 280, 0, 0, 0, 0, 1); // sets minimum & the 1 = scalable
     this->resizable(this);
@@ -760,12 +760,12 @@ float Guitar::fret_distance(int num_fret)
     return 20 - (20 / (pow(2.0, (num_fret / 12.0))));
 }
 
-void Guitar::marker(int x, int y)
+void Guitar::marker(int x, int y, int num)
 {
-    Fl_Text_Display* o = new Fl_Text_Display(x, y, 0, 0, ".");
-    o->box(FL_UP_FRAME);
-    o->labelfont(9);
-    o->labelsize(c_global_min_marker_size);
+    m_marker[num] = new Fl_Text_Display(x, y, 0, 0, ".");
+    m_marker[num]->box(FL_UP_FRAME);
+    m_marker[num]->labelfont(9);
+    m_marker[num]->labelsize(c_global_min_marker_size);
 }
 
 void Guitar::reset_all_controls()
@@ -850,10 +850,12 @@ void Guitar::triggerFretNotes()
 void Guitar::adjust_label_sizes()
 {
     int window_h = this->h();
+#if 0
     int label_size;
     
     /* Adjusting by increment works if you resize slowly so that an increment
-     is not bypassed. */
+     is not bypassed. The advantage is you do not need global class variables
+     for the widgets */
 
     if(window_h > (m_window_size_h + c_global_label_resize_increment) ||
        window_h < (m_window_size_h - c_global_label_resize_increment) )
@@ -902,6 +904,59 @@ void Guitar::adjust_label_sizes()
                 w->labelsize(label_size);
             }
         }
+        m_window_size_h = window_h;
+        Fl::redraw();
+    }
+#endif // 0
+
+    /* This adjusts by widow resize ratio based on minimum default sizes.
+     The advantage is that it works even if increment is skipped and maintains
+     the relative size better. The disadvantage is that it requires all adjusted
+     widgets to be identified by class global to use the minimum global setting
+     to adjust by the ratio */
+    
+    if(window_h > (m_window_size_h + c_global_label_resize_increment) ||
+       window_h < (m_window_size_h - c_global_label_resize_increment) )
+    {
+
+        float ratio = ((float)window_h / c_global_min_window_h);
+
+        m_reset_button->labelsize(c_global_min_label_size * ratio);
+        m_midi_in_group->labelsize(c_global_min_group_label_size * ratio);
+        m_control_button->labelsize(c_global_min_label_size * ratio);
+        m_transpose_spinner->labelsize(c_global_min_label_size * ratio);
+        m_transpose_spinner->textsize(c_global_min_spin_text_size * ratio);
+        m_channel_in_spinner->labelsize(c_global_min_label_size * ratio);
+        m_channel_in_spinner->textsize(c_global_min_spin_text_size * ratio);
+        
+        m_midi_out_group->labelsize(c_global_min_group_label_size * ratio);
+        m_program_change_spinner->labelsize(c_global_min_label_size * ratio);
+        m_program_change_spinner->textsize(c_global_min_spin_text_size * ratio);
+        m_channel_out_spinner->labelsize(c_global_min_label_size * ratio);
+        m_channel_out_spinner->textsize(c_global_min_spin_text_size * ratio);
+        m_velocity_slider->labelsize(c_global_min_label_size * ratio);
+        
+        for(int i = 0; i < 25; ++i )
+        {
+            m_fret_numbers[i]->labelsize(c_global_min_number_label_size * ratio);
+        }
+        
+        for (int i = 0; i < 6; i++)
+        {
+            m_gtr_string[i]->labelsize(c_global_min_label_size * ratio);
+            m_string_numbers[i]->labelsize(c_global_min_number_label_size * ratio);
+        }
+        
+        for(int i = 0; i < 150; ++i)
+        {
+            m_fret[i]->labelsize(c_global_min_fret_label_size * ratio);
+        }
+        
+        for(int i = 0; i < 10; i++)
+        {
+            m_marker[i]->labelsize(c_global_min_marker_size * ratio);
+        }
+        
         m_window_size_h = window_h;
         Fl::redraw();
     }
