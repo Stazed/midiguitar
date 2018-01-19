@@ -4,6 +4,7 @@ midiguitar README
 Midiguitar is a midi player and generator similar to virtual piano keyboards, but for a guitar.
 The default build uses RtMidi classes which are included.
 There is also a legacy Alsa build. This can be enabled with ./configure --enable-alsa
+A Jack midi standalone build can be enabled with ./configure --enable-jack
 The RtMidi build can be disabled with ./configure --disable-rtmidi
 
 Requires fltk, jack, alsa libraries.
@@ -14,7 +15,7 @@ How to install?
 
 How to use midiguitar?
 
--As a player
+-As a player (pianola)
 
 Midiguitar can display fret locations from midi notes when received from a player. It was designed to work with a sequencer such as seq32, seq42 (or seq24, sequencer64, etc).  When midiguitar receives a midi note,	it will display the note by turning the fret or open string location red, and also indicate the midi note value and letter value.
 
@@ -48,7 +49,7 @@ Use the command line -c option to select the midi channel for sending notes.
 
 See command line -h for additional options.
 
-This program was originally written as a practice project for learning C++.
+This program was written as a practice project for learning C++, fltk, alsa, jack, RtMidi and anything else I can throw in :).
 
 Your mileage may vary!!!
 
