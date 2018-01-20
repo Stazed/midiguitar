@@ -146,6 +146,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     }
     
     /* Fret numbering */
+    memset(&m_fret_numbers, 0, sizeof(m_fret_numbers));
     int n = 0;
 
     {
@@ -169,6 +170,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     }
     
     /* Guitar string toggle buttons */
+    memset(&m_gtr_string, 0, sizeof(m_gtr_string));
     char note_string[] = "EBGDAE";
     int y = 98;
     for (int i = 0; i < 6; i++)
@@ -190,7 +192,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
         y += c_global_fret_height;
     }
     
-   /* String number labels*/
+    /* String number labels*/
+    memset(&m_string_numbers, 0, sizeof(m_string_numbers));
     y = 100;
     for (int i = 0; i < 6; i++)
     {
@@ -213,6 +216,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     n = 0; // reset and reuse
 
     /* Guitar Fret Board */
+    memset(&m_fret, 0, sizeof(m_fret));
     Fl_Group* guitar_frets = new Fl_Group(47, c_global_fret_height + 72, 965, 126);
     guitar_frets->box(FL_BORDER_BOX);
     {
@@ -249,6 +253,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     }
     guitar_frets->end();    // Must remember to do this or everything after group declaration is included!
 
+    memset(&m_marker, 0, sizeof(m_marker));
     marker(260, 250, 0);
     marker(372, 250, 1);
     marker(475, 250, 2);
@@ -260,15 +265,17 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     marker(895, 250, 8);
     marker(941, 250, 9);
     
+    this->end();
     this->size_range(1020, 280, 0, 0, 0, 0, 1); // sets minimum & the 1 = scalable
     this->resizable(this);
     
+    /* End Window */
     m_windowLabel += PACKAGE_VERSION;
     label(m_windowLabel.c_str());
     
-    /* End Window */
     
     /* Load the Midi note numeric value into note array according to guitar type */
+    memset(&m_note_array, 0, sizeof(m_note_array));
     if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
     {
         for (int i = 5; i >= 0; i--)
@@ -965,7 +972,9 @@ void Guitar::adjust_label_sizes()
 
 void Guitar::stringToggle(int gString)
 {
+    Fl::lock();
     cb_string_callback(m_gtr_string[gString]);
+    Fl::unlock();
 }
 
 void Guitar::fretToggle(uint note, bool on_off)
@@ -1026,11 +1035,18 @@ void Guitar::fretToggle(uint note, bool on_off)
     }
     /* this gets triggered only when we use the storeFretLocation[] */
     if (found_fret && m_last_fret)
+    {
         toggle_fret(calculate_closest_fret(), on_off);
+    }
 }
 
 void Guitar::toggle_fret(int location, bool on_off)
 {
+    if(location < 0 || location > 150)
+        return;
+    
+    Fl::lock();
+
     int string = location / 25;
     int nfret = location % 25;
 
@@ -1055,6 +1071,7 @@ void Guitar::toggle_fret(int location, bool on_off)
 
         m_fret[string + nfret]->copy_label(label.c_str());
     }
+    Fl::unlock();
 }
 
 void Guitar::cb_transpose_callback(Fl_Spinner* o)
@@ -1250,6 +1267,9 @@ int Guitar::get_fret_center(uint x_or_y, uint h_or_w)
 
 int Guitar::calculate_closest_fret()
 {
+    if(m_last_used_fret == NO_FRET)
+        return NO_FRET;
+    
     int last_X = get_fret_center(m_fret[m_last_used_fret]->x(), m_fret[m_last_used_fret]->h());
     int last_Y = get_fret_center(m_fret[m_last_used_fret]->y(), m_fret[m_last_used_fret]->w());
 
@@ -1289,10 +1309,12 @@ int Guitar::calculate_closest_fret()
     for (int i = 0; i < 6; i++)
         storeFretLocation[i] = NO_FRET; // clear the array
 
-    m_last_fret = true;
-    m_last_used_fret = closest_fret;
-
-    // printf("closest_fret %d\n",closest_fret);
+    if(closest_fret != NO_FRET)
+    {
+        m_last_fret = true;
+        m_last_used_fret = closest_fret;
+    }
+//     printf("closest_fret %d\n",closest_fret);
 
     return closest_fret;
 }
