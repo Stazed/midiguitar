@@ -31,7 +31,10 @@
 #include <FL/Fl_Text_Display.H>
 #include <sstream>
 #include "globals.h"
+
+#ifndef CMAKE_BUILD
 #include "config.h"
+#endif
 
 #ifdef ALSA_SUPPORT
 #include <alsa/asoundlib.h>

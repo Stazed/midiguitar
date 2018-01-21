@@ -19,7 +19,9 @@
 //-----------------------------------------------------------------------------
 
 
+#ifndef CMAKE_BUILD
 #include "config.h"
+#endif
 
 #ifdef JACK_SUPPORT
 #define JACK_RINGBUFFER_SIZE 16384 // Default size for ringbuffer

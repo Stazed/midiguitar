@@ -59,7 +59,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
+#ifndef CMAKE_BUILD
 #include "config.h"
+#endif
 
 /************************************************************************/
 /*! \class RtMidiError
