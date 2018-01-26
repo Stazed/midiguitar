@@ -266,7 +266,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     marker(941, 250, 9);
     
     this->end();
-    this->size_range(1020, 280, 0, 0, 0, 0, 1); // sets minimum & the 1 = scalable
+    this->size_range(510, 140, 0, 0, 0, 0, 1); // sets minimum & the 1 = scalable
     this->resizable(this);
     
     /* End Window */
