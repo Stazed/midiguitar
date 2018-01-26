@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1)
 
 #set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -10,6 +10,7 @@ add_definitions(-DCMAKE_BUILD=1)
 project(midiguitar)
 
 add_executable(midiguitar src/main.cpp src/guitar.cpp src/RtMidi.cpp)
+target_link_libraries (midiguitar -ldl)
 
 option (EnableRtMidi "Enable RtMidi build. RtMidi is the default build" ON)
 option (EnableJackStandalone "Enable jack standalone support" OFF)

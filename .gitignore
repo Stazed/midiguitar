@@ -1,6 +1,7 @@
 *.o
 midiguitar
 .deps/
+build/
 Makefile
 Makefile.in
 config.h
