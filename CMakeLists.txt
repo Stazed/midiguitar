@@ -18,14 +18,9 @@ option (EnableAlsaLegacy "Enable legacy alsa support" OFF)
 option (BuildForDebug "Include gdb debugging support" OFF)
 
 find_package (PkgConfig REQUIRED)
-if (PKG_CONFIG_FOUND)
-    message(STATUS "Found pkg-config ${PKG_CONFIG_EXECUTABLE}")
-else (PKG_CONFIG_FOUND)
-    message(FATAL_ERROR "pkg-config required but not found")
-endif (PKG_CONFIG_FOUND)
 
 # dependencies
-pkg_check_modules (ALSA REQUIRED alsa>=1.0.17)
+find_package (ALSA REQUIRED)
 pkg_check_modules (JACK REQUIRED jack>=0.115.6)
 
 # fltk
