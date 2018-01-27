@@ -24,30 +24,15 @@ else (PKG_CONFIG_FOUND)
     message(FATAL_ERROR "pkg-config required but not found")
 endif (PKG_CONFIG_FOUND)
 
-# Alsa
+# dependencies
 pkg_check_modules (ALSA REQUIRED alsa>=1.0.17)
-if (ALSA_FOUND)
-    message(STATUS "Found Alsa ${ALSA_VERSION}")
-else (ALSA_FOUND)
-    message(FATAL_ERROR "Alsa >=1.0.17 required but not found")
-endif (ALSA_FOUND)
-
-# Jack
 pkg_check_modules (JACK REQUIRED jack>=0.115.6)
-if (JACK_FOUND)
-    message(STATUS "Found jack ${JACK_VERSION}")
-else (JACK_FOUND)
-    message(FATAL_ERROR "Jack >=0.115.6 required but not found")
-endif (JACK_FOUND)
 
 # fltk
 find_package (FLTK REQUIRED)
 if (FLTK_FOUND)
-    message (STATUS "Found FLTK")
     include_directories(${FLTK_INCLUDE_DIR})
     target_link_libraries(midiguitar ${FLTK_LIBRARIES})
-else (FLTK_FOUND)
-    message (FATAL_ERROR "FLTK required but not found")
 endif (FLTK_FOUND)
 
 
@@ -84,17 +69,21 @@ endif (EnableRtMidi)
 
 if (EnableJackStandalone)
     if (JACK_FOUND)
-        include_directories(${JACK_INCLUDE_DIR})
-        target_link_libraries(midiguitar ${JACK_LIBRARIES})
         add_definitions(-DJACK_SUPPORT=1)
+        if(NOT EnableRtMidi)   # These are already included if RtMidi is enabled
+            include_directories(${JACK_INCLUDE_DIR})
+            target_link_libraries(midiguitar ${JACK_LIBRARIES})
+        endif (NOT EnableRtMidi)
     endif (JACK_FOUND)
 endif (EnableJackStandalone)
 
 if (EnableAlsaLegacy)
     if (ALSA_FOUND)
-        include_directories(${ALSA_INCLUDE_DIR})
-        target_link_libraries(midiguitar ${ALSA_LIBRARIES})
         add_definitions(-DALSA_SUPPORT=1)
+        if(NOT EnableRtMidi)   # These are already included if RtMidi is enabled
+            include_directories(${ALSA_INCLUDE_DIR})
+            target_link_libraries(midiguitar ${ALSA_LIBRARIES})
+        endif (NOT EnableRtMidi)
     endif (ALSA_FOUND)
 endif (EnableAlsaLegacy)
 
