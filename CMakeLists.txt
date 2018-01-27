@@ -10,7 +10,6 @@ add_definitions(-DCMAKE_BUILD=1)
 project(midiguitar)
 
 add_executable(midiguitar src/main.cpp src/guitar.cpp src/RtMidi.cpp)
-target_link_libraries (midiguitar -ldl)
 
 option (EnableRtMidi "Enable RtMidi build. RtMidi is the default build" ON)
 option (EnableJackStandalone "Enable jack standalone support" OFF)
@@ -81,6 +80,9 @@ if (EnableAlsaLegacy)
         endif (NOT EnableRtMidi)
     endif (ALSA_FOUND)
 endif (EnableAlsaLegacy)
+
+#this gotta go last
+target_link_libraries (midiguitar -ldl)
 
 # clean sweep
 add_custom_target (distclean
