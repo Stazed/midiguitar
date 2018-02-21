@@ -48,34 +48,35 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     m_window_size_h(c_global_min_window_h),
     m_midi_numbers(midi_numbers)
 #ifdef RTMIDI_SUPPORT
-    ,m_midiIn(0)
-    ,m_midiOut(0)
+    , m_midiIn(0)
+    , m_midiOut(0)
 #endif
 #ifdef JACK_SUPPORT
-    ,m_jack_midi_in_port(NULL)
-    ,m_jack_midi_out_port(NULL)
+    , m_jack_midi_in_port(NULL)
+    , m_jack_midi_out_port(NULL)
 #endif
-        
+
 {
     {
         m_reset_button = new Fl_Button(50, 15, 70, 45, "Reset");
         m_reset_button->tooltip("Press button to clear all CC values and previous note calculation.\n"
-                   "Also, note OFF will be sent to all fret locations.");
+                "Also, note OFF will be sent to all fret locations.");
         m_reset_button->color(FL_DARK_RED);
         m_reset_button->selection_color((Fl_Color) 135);
         m_reset_button->labelcolor(FL_WHITE);
         m_reset_button->labelsize(c_global_min_label_size);
         m_reset_button->callback((Fl_Callback*) reset_callback, this);
     } // Fl_Button* o
-    
-    {m_midi_in_group = new Fl_Group(145, 13, 250, 51, "Midi In");
+
+    {
+        m_midi_in_group = new Fl_Group(145, 13, 250, 51, "Midi In");
         m_midi_in_group->labelsize(c_global_min_group_label_size);
         m_midi_in_group->box(FL_BORDER_BOX);
         {
             m_control_button = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
             m_control_button->type(1);
             m_control_button->tooltip("Press to stop calculation of nearest fret.\n"
-                       "If pressed all possible note locations will be triggered.");
+                    "If pressed all possible note locations will be triggered.");
             m_control_button->color(FL_GREEN);
             m_control_button->selection_color(FL_FOREGROUND_COLOR);
             m_control_button->labelsize(c_global_min_label_size);
@@ -96,17 +97,18 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
             m_channel_in_spinner->minimum(0);
             m_channel_in_spinner->maximum(16);
             m_channel_in_spinner->tooltip("Enter the midi channel to receive input.\n"
-                       "Zero '0' means all channels.");
+                    "Zero '0' means all channels.");
             m_channel_in_spinner->value(m_midi_in_channel);
             m_channel_in_spinner->align(Fl_Align(FL_ALIGN_TOP));
             m_channel_in_spinner->labelsize(c_global_min_label_size);
             m_channel_in_spinner->callback((Fl_Callback*) in_channel_callback, this);
         } // Fl_Spinner* m_channel_in_spinner
-        m_midi_in_group->end();   // Must remember to do this or everything after group declaration is included!
+        m_midi_in_group->end(); // Must remember to do this or everything after group declaration is included!
         Fl_Group::current()->resizable(m_midi_in_group);
     }
-    
-    {m_midi_out_group = new Fl_Group(420, 13, 365, 51, "Midi Out");
+
+    {
+        m_midi_out_group = new Fl_Group(420, 13, 365, 51, "Midi Out");
         m_midi_out_group->labelsize(c_global_min_group_label_size);
         m_midi_out_group->box(FL_BORDER_BOX);
         {
@@ -125,28 +127,28 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
             m_channel_out_spinner->minimum(1);
             m_channel_out_spinner->maximum(16);
             m_channel_out_spinner->tooltip("Enter/select the midi channel to send output");
-            m_channel_out_spinner->value(m_midi_out_channel+1);
+            m_channel_out_spinner->value(m_midi_out_channel + 1);
             m_channel_out_spinner->align(Fl_Align(FL_ALIGN_TOP));
             m_channel_out_spinner->labelsize(c_global_min_label_size);
             m_channel_out_spinner->textsize(c_global_min_spin_text_size);
             m_channel_out_spinner->callback((Fl_Callback*) out_channel_callback, this);
         } // Fl_Spinner* m_channel_out_spinner
-        { 
+        {
             m_velocity_slider = new Fl_Slider(600, 35, 145, 17, "Velocity");
             m_velocity_slider->align(Fl_Align(FL_ALIGN_TOP));
             m_velocity_slider->type(FL_HORIZONTAL);
             m_velocity_slider->minimum(0);
             m_velocity_slider->maximum(127);
-            m_velocity_slider->value((double)NOTE_ON_VELOCITY);
+            m_velocity_slider->value((double) NOTE_ON_VELOCITY);
             m_velocity_slider->labelsize(c_global_min_label_size);
             m_velocity_slider->callback((Fl_Callback*) velocity_callback, this);
         } // Fl_Slider* o
-        m_midi_out_group->end();   // Must remember to do this or everything after group declaration is included!
+        m_midi_out_group->end(); // Must remember to do this or everything after group declaration is included!
         Fl_Group::current()->resizable(m_midi_out_group);
     }
-    
+
     /* Fret numbering */
-    memset(&m_fret_numbers, 0, sizeof(m_fret_numbers));
+    memset(&m_fret_numbers, 0, sizeof (m_fret_numbers));
     int n = 0;
 
     {
@@ -168,9 +170,9 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
         m_fret_numbers[n]->copy_label(SSTR(n).c_str()); // n = 1 to 24
         n++;
     }
-    
+
     /* Guitar string toggle buttons */
-    memset(&m_gtr_string, 0, sizeof(m_gtr_string));
+    memset(&m_gtr_string, 0, sizeof (m_gtr_string));
     char note_string[] = "EBGDAE";
     int y = 98;
     for (int i = 0; i < 6; i++)
@@ -191,9 +193,9 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
         m_gtr_string[j]->callback((Fl_Callback*) string_callback, this);
         y += c_global_fret_height;
     }
-    
+
     /* String number labels*/
-    memset(&m_string_numbers, 0, sizeof(m_string_numbers));
+    memset(&m_string_numbers, 0, sizeof (m_string_numbers));
     y = 100;
     for (int i = 0; i < 6; i++)
     {
@@ -212,11 +214,11 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
         m_string_numbers[i]->align(Fl_Align(FL_ALIGN_LEFT));
         y += c_global_fret_height;
     }
-  
+
     n = 0; // reset and reuse
 
     /* Guitar Fret Board */
-    memset(&m_fret, 0, sizeof(m_fret));
+    memset(&m_fret, 0, sizeof (m_fret));
     Fl_Group* guitar_frets = new Fl_Group(47, c_global_fret_height + 72, 965, 126);
     guitar_frets->box(FL_BORDER_BOX);
     {
@@ -238,8 +240,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
 
                 float fret_W = distance2 - distance1;
                 m_fret[n] = new Fret((distance1 * c_global_pixel_scale) + 95,
-                                   (y + 1) * c_global_fret_height + (y >= 6 ? 12 * 40 : 75),
-                                   fret_W*c_global_pixel_scale, c_global_fret_height);
+                        (y + 1) * c_global_fret_height + (y >= 6 ? 12 * 40 : 75),
+                        fret_W*c_global_pixel_scale, c_global_fret_height);
                 m_fret[n]->color((Fl_Color) 18);
                 m_fret[n]->selection_color(FL_GREEN);
                 m_fret[n]->when(FL_WHEN_CHANGED);
@@ -251,9 +253,9 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
             }
         }
     }
-    guitar_frets->end();    // Must remember to do this or everything after group declaration is included!
+    guitar_frets->end(); // Must remember to do this or everything after group declaration is included!
 
-    memset(&m_marker, 0, sizeof(m_marker));
+    memset(&m_marker, 0, sizeof (m_marker));
     marker(260, 250, 0);
     marker(372, 250, 1);
     marker(475, 250, 2);
@@ -264,18 +266,18 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     marker(844, 250, 7);
     marker(895, 250, 8);
     marker(941, 250, 9);
-    
+
     this->end();
     this->size_range(510, 140, 0, 0, 0, 0, 1); // sets minimum & the 1 = scalable
     this->resizable(this);
-    
+
     /* End Window */
     m_windowLabel += PACKAGE_VERSION;
     label(m_windowLabel.c_str());
-    
-    
+
+
     /* Load the Midi note numeric value into note array according to guitar type */
-    memset(&m_note_array, 0, sizeof(m_note_array));
+    memset(&m_note_array, 0, sizeof (m_note_array));
     if (m_guitar_type == RH_MIRROR_GUITAR || m_guitar_type == LH_MIRROR_GUITAR)
     {
         for (int i = 5; i >= 0; i--)
@@ -285,7 +287,8 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
                 m_note_array[i][j] = guitarMidiNote[i][j];
             }
         }
-    } else
+    }
+    else
     {
         for (int i = 0; i < 6; i++)
         {
@@ -295,26 +298,26 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
             }
         }
     }
-    
+
     for (int i = 0; i < 6; i++)
         storeFretLocation[i] = NO_FRET; // initialize the array
 
 #ifdef ALSA_SUPPORT
-    if(!init_Alsa())
+    if (!init_Alsa())
     {
         exit(-1);
     }
 #endif  // ALSA_SUPPORT
-    
+
 #ifdef RTMIDI_SUPPORT
-    if(!init_rt_midi())
+    if (!init_rt_midi())
     {
         exit(-1);
     }
 #endif
-    
+
 #ifdef JACK_SUPPORT
-    if(!init_jack())
+    if (!init_jack())
     {
         exit(-1);
     }
@@ -327,77 +330,82 @@ Guitar::~Guitar()
 #ifdef ALSA_SUPPORT
     snd_seq_close(mHandle);
 #endif
-    
+
 #ifdef RTMIDI_SUPPORT
     delete m_midiIn;
     delete m_midiOut;
 #endif
-    
+
 #ifdef JACK_SUPPORT
-    jack_ringbuffer_free( m_buffSize );
-    jack_ringbuffer_free( m_buffMessage );
-    if ( m_jack_client ) {
-        jack_client_close (m_jack_client);}
+    jack_ringbuffer_free(m_buffSize);
+    jack_ringbuffer_free(m_buffMessage);
+    if (m_jack_client)
+    {
+        jack_client_close(m_jack_client);
+    }
 #endif
     //dtor
 }
 
 #ifdef RTMIDI_SUPPORT
+
 bool Guitar::init_rt_midi()
 {
-    if(init_rt_midi_out())
+    if (init_rt_midi_out())
     {
         m_midiOut->openVirtualPort("Output");
-    }else
+    }
+    else
     {
         fl_alert("Error creating RtMidi out port.\n");
         return false;
-    } 
-    
-    if(init_rt_midi_in())
+    }
+
+    if (init_rt_midi_in())
     {
         m_midiIn->openVirtualPort("Input");
-        m_midiIn->setCallback(RtMidiCallback, (void*)this);
-    }else
+        m_midiIn->setCallback(RtMidiCallback, (void*) this);
+    }
+    else
     {
         fl_alert("Error creating RtMidi in port.\n");
         return false;
     }
-    
+
     return true;
 }
 
 void Guitar::RtplayMidiGuitar(std::vector< unsigned char > *message, unsigned int nBytes)
 {
     /* We only care about note on/off and CC which are 3 bytes */
-    if(nBytes != 3)
+    if (nBytes != 3)
         return;
-    
+
     /* events */
-    unsigned char status = 0, channel = 0, parameter = 0, value = 0; 
-    
+    unsigned char status = 0, channel = 0, parameter = 0, value = 0;
+
     status = message->at(0);
-    channel = (message->at(0)  & EVENT_CHANNEL);
-    parameter = message->at(1);     // for notes = key, for CC = which one
-    value = message->at(2);         // for notes = velocity, for CC = value sent
-    
+    channel = (message->at(0) & EVENT_CHANNEL);
+    parameter = message->at(1); // for notes = key, for CC = which one
+    value = message->at(2); // for notes = velocity, for CC = value sent
+
     /* For Notes & CC we compare with EVENT_CLEAR_CHAN_MASK because we do not 
      want to iterate through 16 different items do to the channel bit. So we
      mask it off to compare to the single generic note or CC.
      User is 1 to 16, we are 0 to 15 (= -1). Channel 0 (user) means all channels*/
-    
-    if(channel == m_midi_in_channel - 1 || m_midi_in_channel == 0)
+
+    if (channel == m_midi_in_channel - 1 || m_midi_in_channel == 0)
     {
         if (((status & EVENT_CLEAR_CHAN_MASK) == EVENT_CONTROL_CHANGE) &&
-            (parameter == m_guitar_string_param) &&
-            (m_bcontrol == true))
+                (parameter == m_guitar_string_param) &&
+                (m_bcontrol == true))
         {
-            if (value >= 1 && value <= 6)   // must do or it gets sent to random key pointer
+            if (value >= 1 && value <= 6) // must do or it gets sent to random key pointer
             {
-                stringToggle(value - 1);    // we use 0 to 5, but user is 1 to 6
+                stringToggle(value - 1); // we use 0 to 5, but user is 1 to 6
             }
         }
-              
+
         if ((status & EVENT_CLEAR_CHAN_MASK) == EVENT_NOTE_ON)
             fretToggle(parameter, true);
 
@@ -408,14 +416,14 @@ void Guitar::RtplayMidiGuitar(std::vector< unsigned char > *message, unsigned in
 
 void Guitar::RtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData)
 {
-    Guitar *MidiGit = (Guitar*)userData;
+    Guitar *MidiGit = (Guitar*) userData;
 
     unsigned int nBytes = message->size();
-    if(nBytes)
+    if (nBytes)
     {
         MidiGit->RtplayMidiGuitar(message, nBytes);
-    
-        MidiGit->m_midiOut->sendMessage(message ); // Pass thru to out port
+
+        MidiGit->m_midiOut->sendMessage(message); // Pass thru to out port
     }
 }
 
@@ -435,14 +443,14 @@ bool Guitar::init_rt_midi_in()
 }
 
 bool Guitar::init_rt_midi_out()
-{  
+{
     // RtMidiOut constructor
     std::string clientName = m_client_name + " Out";
     try
     {
         m_midiOut = new RtMidiOut(RtMidi::UNSPECIFIED, clientName);
     }
-    catch ( RtMidiError &error )
+    catch (RtMidiError &error)
     {
         error.printMessage();
         return false;
@@ -450,23 +458,24 @@ bool Guitar::init_rt_midi_out()
     return true;
 }
 
-void Guitar::RtSendMidiNote(uint note, bool OnorOff)      // bool OnorOff true = ON, false = Off
+void Guitar::RtSendMidiNote(uint note, bool OnorOff) // bool OnorOff true = ON, false = Off
 {
     unsigned char velocity = m_note_on_velocity;
     m_message.clear();
-    
-    if(OnorOff)
+
+    if (OnorOff)
     {
-        m_message.push_back(EVENT_NOTE_ON + m_midi_out_channel);       // status note ON
-    }else
+        m_message.push_back(EVENT_NOTE_ON + m_midi_out_channel); // status note ON
+    }
+    else
     {
-        m_message.push_back(EVENT_NOTE_OFF + m_midi_out_channel);       // status note Off
+        m_message.push_back(EVENT_NOTE_OFF + m_midi_out_channel); // status note Off
         velocity = NOTE_OFF_VELOCITY;
     }
-    
+
     m_message.push_back(note);
     m_message.push_back(velocity);
-    
+
     m_midiOut->sendMessage(&m_message);
 }
 
@@ -475,13 +484,14 @@ void Guitar::RtSendProgramChange(uint a_change)
     m_message.clear();
     m_message.push_back(EVENT_PROGRAM_CHANGE + m_midi_out_channel);
     m_message.push_back(a_change);
-    
+
     m_midiOut->sendMessage(&m_message);
 }
 
 #endif // RTMIDI_SUPPORT
 
 #ifdef ALSA_SUPPORT
+
 bool Guitar::init_Alsa()
 {
     mHandle = 0;
@@ -497,8 +507,8 @@ bool Guitar::init_Alsa()
 
     sprintf(portname, "midi_in");
     if ((in_port = snd_seq_create_simple_port(mHandle, portname,
-                                              SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
-                                              SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
+            SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+            SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
     {
         fl_alert("Error creating sequencer port.\n");
         return false;
@@ -506,8 +516,8 @@ bool Guitar::init_Alsa()
 
     sprintf(portname, "midi_out");
     if ((out_port = snd_seq_create_simple_port(mHandle, portname,
-                                               SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
-                                               SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
+            SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
+            SND_SEQ_PORT_TYPE_APPLICATION)) < 0)
     {
         fl_alert("Error creating sequencer port.\n");
         return false;
@@ -530,11 +540,11 @@ void Guitar::alsaGetMidiMessages()
             snd_seq_free_event(ev);
 
             if (ev->data.note.channel == m_midi_in_channel - 1 || m_midi_in_channel == 0 ||
-                ev->data.control.channel == m_midi_in_channel - 1)
+                    ev->data.control.channel == m_midi_in_channel - 1)
             {
                 if (ev->type == SND_SEQ_EVENT_CONTROLLER &&
-                    ev->data.control.param == m_guitar_string_param &&
-                    m_bcontrol == true)
+                        ev->data.control.param == m_guitar_string_param &&
+                        m_bcontrol == true)
                 {
                     if (ev->data.control.value >= 1 && ev->data.control.value <= 6) // must do or it gets sent to random key pointer
                     {
@@ -560,65 +570,66 @@ void Guitar::alsaGetMidiMessages()
             snd_seq_free_event(ev);
 
         }
-    } while (ev);
+    }
+    while (ev);
 }
 
 void Guitar::alsaSendMidiNote(uint a_note, bool On_or_Off)
 {
     snd_seq_ev_clear(&m_ev);
-    if(On_or_Off)
+    if (On_or_Off)
         snd_seq_ev_set_noteon(&m_ev, m_midi_out_channel, a_note, m_note_on_velocity);
     else
         snd_seq_ev_set_noteoff(&m_ev, m_midi_out_channel, a_note, NOTE_OFF_VELOCITY);
-    
+
     snd_seq_ev_set_source(&m_ev, out_port);
     snd_seq_ev_set_subs(&m_ev);
     snd_seq_ev_set_direct(&m_ev);
     snd_seq_event_output_direct(mHandle, &m_ev);
     snd_seq_drain_output(mHandle);
-    
+
     snd_seq_ev_clear(&m_ev);
 }
 
 void Guitar::alsaSendProgramChange(uint a_change)
 {
     snd_seq_ev_clear(&m_ev);
-    
-    snd_seq_ev_set_pgmchange(&m_ev,m_midi_out_channel,a_change);
-    
+
+    snd_seq_ev_set_pgmchange(&m_ev, m_midi_out_channel, a_change);
+
     /* Send the program change to out port */
     snd_seq_ev_set_source(&m_ev, out_port);
     snd_seq_ev_set_subs(&m_ev);
     snd_seq_ev_set_direct(&m_ev);
     snd_seq_event_output_direct(mHandle, &m_ev);
     snd_seq_drain_output(mHandle);
-    
+
     snd_seq_ev_clear(&m_ev);
 }
 #endif // ALSA_SUPPORT
 
 #ifdef JACK_SUPPORT
-    
+
 bool Guitar::init_jack()
 {
     // Initialize output ringbuffers  
-    m_buffSize = jack_ringbuffer_create( JACK_RINGBUFFER_SIZE );
-    m_buffMessage = jack_ringbuffer_create( JACK_RINGBUFFER_SIZE );
-    
-    if ((m_jack_client = jack_client_open (m_client_name.c_str(), JackNoStartServer, NULL)) == 0)
+    m_buffSize = jack_ringbuffer_create(JACK_RINGBUFFER_SIZE);
+    m_buffMessage = jack_ringbuffer_create(JACK_RINGBUFFER_SIZE);
+
+    if ((m_jack_client = jack_client_open(m_client_name.c_str(), JackNoStartServer, NULL)) == 0)
     {
         fl_alert("Jack server is not running");
         return false;
     }
 
-    jack_set_process_callback (m_jack_client, process, this);
+    jack_set_process_callback(m_jack_client, process, this);
 
-    jack_on_shutdown (m_jack_client, jack_shutdown, this);
+    jack_on_shutdown(m_jack_client, jack_shutdown, this);
 
-    m_jack_midi_in_port = jack_port_register (m_jack_client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-    m_jack_midi_out_port = jack_port_register (m_jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+    m_jack_midi_in_port = jack_port_register(m_jack_client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+    m_jack_midi_out_port = jack_port_register(m_jack_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
 
-    if (jack_activate (m_jack_client))
+    if (jack_activate(m_jack_client))
     {
         fl_alert("Cannot activate Jack client");
         return false;
@@ -629,17 +640,17 @@ bool Guitar::init_jack()
 int Guitar::process(jack_nframes_t nframes, void *arg)
 {
     int i, count;
-    Guitar *Gtr = ((Guitar*)arg);
-    
+    Guitar *Gtr = ((Guitar*) arg);
+
     /* For midi incoming */
     jack_midi_event_t midievent;
-    
+
     // Is port created?
-    if ( Gtr->m_jack_midi_in_port == NULL ) return 0;   // we ignore out port as well!
-    
-    float *data = (float *)jack_port_get_buffer(Gtr->m_jack_midi_in_port, nframes);
+    if (Gtr->m_jack_midi_in_port == NULL) return 0; // we ignore out port as well!
+
+    float *data = (float *) jack_port_get_buffer(Gtr->m_jack_midi_in_port, nframes);
     count = jack_midi_get_event_count(data);
-    
+
     for (i = 0; i < count; i++)
     {
         jack_midi_event_get(&midievent, data, i);
@@ -649,24 +660,23 @@ int Guitar::process(jack_nframes_t nframes, void *arg)
     /* For midi outgoing */
     jack_midi_data_t *midiData;
     int space;
-    
+
     // Is port created?
-    if ( Gtr->m_jack_midi_out_port == NULL ) return 0;
+    if (Gtr->m_jack_midi_out_port == NULL) return 0;
 
-    void *buffer = jack_port_get_buffer( Gtr->m_jack_midi_out_port, nframes );
-    jack_midi_clear_buffer( buffer );
+    void *buffer = jack_port_get_buffer(Gtr->m_jack_midi_out_port, nframes);
+    jack_midi_clear_buffer(buffer);
 
-    while ( jack_ringbuffer_read_space( Gtr->m_buffSize ) > 0 )
+    while (jack_ringbuffer_read_space(Gtr->m_buffSize) > 0)
     {
-        jack_ringbuffer_read( Gtr->m_buffSize, (char *) &space, (size_t) sizeof(space) );
-        midiData = jack_midi_event_reserve( buffer, 0, space );
+        jack_ringbuffer_read(Gtr->m_buffSize, (char *) &space, (size_t) sizeof (space));
+        midiData = jack_midi_event_reserve(buffer, 0, space);
 
-        jack_ringbuffer_read( Gtr->m_buffMessage, (char *) midiData, (size_t) space );
+        jack_ringbuffer_read(Gtr->m_buffMessage, (char *) midiData, (size_t) space);
     }
- 
+
     return 0;
 }
-
 
 void Guitar::jack_shutdown(void *arg)
 {
@@ -677,37 +687,37 @@ void Guitar::JackPlayMidiGuitar(jack_midi_event_t *midievent)
 {
     /* Write full message to buffer for pass thru   */
     JackSendMessage(midievent->buffer, midievent->size);
-    
+
     /* Trigger guitar Fret Board    */
     /* We only care about note on/off and CC which are 3 bytes */
-    if(midievent->size != 3)
+    if (midievent->size != 3)
         return;
-    
+
     /* events */
-    unsigned char status = 0, channel = 0, parameter = 0, value = 0; 
-    
+    unsigned char status = 0, channel = 0, parameter = 0, value = 0;
+
     status = midievent->buffer[0];
-    channel = (midievent->buffer[0]  & EVENT_CHANNEL);
-    parameter = midievent->buffer[1];     // for notes = key, for CC = which one
-    value = midievent->buffer[2];         // for notes = velocity, for CC = value sent
-    
+    channel = (midievent->buffer[0] & EVENT_CHANNEL);
+    parameter = midievent->buffer[1]; // for notes = key, for CC = which one
+    value = midievent->buffer[2]; // for notes = velocity, for CC = value sent
+
     /* For Notes & CC we compare with EVENT_CLEAR_CHAN_MASK because we do not 
      want to iterate through 16 different items do to the channel bit. So we
      mask it off to compare to the single generic note or CC.
      User is 1 to 16, we are 0 to 15 (= -1). Channel 0 (user) means all channels*/
-    
-    if(channel == m_midi_in_channel - 1 || m_midi_in_channel == 0)
+
+    if (channel == m_midi_in_channel - 1 || m_midi_in_channel == 0)
     {
         if (((status & EVENT_CLEAR_CHAN_MASK) == EVENT_CONTROL_CHANGE) &&
-            (parameter == m_guitar_string_param) &&
-            (m_bcontrol == true))
+                (parameter == m_guitar_string_param) &&
+                (m_bcontrol == true))
         {
-            if (value >= 1 && value <= 6)   // must do or it gets sent to random key pointer
+            if (value >= 1 && value <= 6) // must do or it gets sent to random key pointer
             {
-                stringToggle(value - 1);    // we use 0 to 5, but user is 1 to 6
+                stringToggle(value - 1); // we use 0 to 5, but user is 1 to 6
             }
         }
-              
+
         if ((status & EVENT_CLEAR_CHAN_MASK) == EVENT_NOTE_ON)
             fretToggle(parameter, true);
 
@@ -720,10 +730,10 @@ void Guitar::JackSendMidiNote(uint note, bool On_or_Off)
 {
     const size_t size = 3;
     unsigned char velocity = m_note_on_velocity;
-    int nBytes = static_cast<int>(size);
-    jack_midi_data_t    jack_midi_data[size];
+    int nBytes = static_cast<int> (size);
+    jack_midi_data_t jack_midi_data[size];
 
-    if(On_or_Off)
+    if (On_or_Off)
     {
         jack_midi_data[0] = EVENT_NOTE_ON + m_midi_out_channel;
     }
@@ -734,7 +744,7 @@ void Guitar::JackSendMidiNote(uint note, bool On_or_Off)
     }
     jack_midi_data[1] = note;
     jack_midi_data[2] = velocity;
-    
+
     // Write full message to buffer
     JackSendMessage(jack_midi_data, size);
 }
@@ -742,23 +752,23 @@ void Guitar::JackSendMidiNote(uint note, bool On_or_Off)
 void Guitar::JackSendProgramChange(uint a_change)
 {
     const size_t size = 2;
-    int nBytes = static_cast<int>(size);
-    jack_midi_data_t    jack_midi_data[size];
-    
+    int nBytes = static_cast<int> (size);
+    jack_midi_data_t jack_midi_data[size];
+
     jack_midi_data[0] = EVENT_PROGRAM_CHANGE + m_midi_out_channel;
     jack_midi_data[1] = a_change;
-    
+
     // Write full message to buffer
     JackSendMessage(jack_midi_data, size);
 }
 
 void Guitar::JackSendMessage(jack_midi_data_t *a_message, size_t size)
 {
-    int nBytes = static_cast<int>(size);
+    int nBytes = static_cast<int> (size);
 
-    jack_ringbuffer_write( m_buffMessage, ( const char * ) a_message,
-                           nBytes );
-    jack_ringbuffer_write( m_buffSize, ( char * ) &nBytes, sizeof( nBytes ) );
+    jack_ringbuffer_write(m_buffMessage, (const char *) a_message,
+            nBytes);
+    jack_ringbuffer_write(m_buffSize, (char *) &nBytes, sizeof ( nBytes));
 }
 
 #endif  // JACK_SUPPORT
@@ -784,7 +794,7 @@ void Guitar::reset_all_controls()
         fretToggle(i, false);
 
     m_have_string_toggle = false;
-    
+
     for (int i = 0; i < 127; i++)
     {
 #ifdef RTMIDI_SUPPORT
@@ -803,7 +813,7 @@ void Guitar::Timeout(void)
 {
     /* Fret mouse click or drag */
     triggerFretNotes();
-    
+
 #ifdef ALSA_SUPPORT
     /* Alsa midi incoming messages */
     alsaGetMidiMessages();
@@ -826,12 +836,14 @@ void Guitar::triggerFretNotes()
                 f->value(1);
                 cb_fret_callback(f);
             }
-        } else
+        }
+        else
         {
             if (Fl::event_inside(m_fret[m_last_focus_fret]))
             {
                 return; // if still inside previous fret then don't change
-            } else
+            }
+            else
             {
                 m_fret[m_last_focus_fret]->value(0); // moved outside of fret so shut it off
                 cb_fret_callback(m_fret[m_last_focus_fret]);
@@ -842,7 +854,8 @@ void Guitar::triggerFretNotes()
             {
                 f->value(1);
                 cb_fret_callback(f);
-            } else
+            }
+            else
                 m_last_focus_fret = NO_FRET; // did not find a fret (moved off fretboard) so clear last
         }
     }
@@ -852,7 +865,7 @@ void Guitar::triggerFretNotes()
         m_fret[m_last_focus_fret]->value(0); // then shut off the last fret we played
         cb_fret_callback(m_fret[m_last_focus_fret]);
         m_last_focus_fret = NO_FRET;
-    }                                   
+    }
 }
 
 void Guitar::adjust_label_sizes()
@@ -860,52 +873,53 @@ void Guitar::adjust_label_sizes()
     int window_h = this->h();
 #if 0
     int label_size;
-    
+
     /* Adjusting by increment works if you resize slowly so that an increment
      is not bypassed. The advantage is you do not need global class variables
      for the widgets */
 
-    if(window_h > (m_window_size_h + c_global_label_resize_increment) ||
-       window_h < (m_window_size_h - c_global_label_resize_increment) )
+    if (window_h > (m_window_size_h + c_global_label_resize_increment) ||
+            window_h < (m_window_size_h - c_global_label_resize_increment))
     {
         int adjust = 0;
-        if(window_h > (m_window_size_h + c_global_label_resize_increment))
+        if (window_h > (m_window_size_h + c_global_label_resize_increment))
         {
             adjust = 1;
         }
-        
-        if(window_h < (m_window_size_h + c_global_label_resize_increment))
+
+        if (window_h < (m_window_size_h + c_global_label_resize_increment))
         {
             adjust = -1;
         }
-        
-        for (int t=0; t < this->children(); t++)
+
+        for (int t = 0; t < this->children(); t++)
         {
             Fl_Widget *w = this->child(t);
-            
+
             if (w->as_group())
             {
-                Fl_Group *g = (Fl_Group *)w;
+                Fl_Group *g = (Fl_Group *) w;
                 label_size = g->labelsize();
                 label_size += adjust;
                 g->labelsize(label_size);
-            
-                for(int i = 0; i < g->children(); i++)
+
+                for (int i = 0; i < g->children(); i++)
                 {
                     Fl_Widget *c = g->child(i);
                     label_size = c->labelsize();
                     label_size += adjust;
                     c->labelsize(label_size);
-                    if(c == m_transpose_spinner || c == m_channel_in_spinner ||
-                       c == m_program_change_spinner || c == m_channel_out_spinner)
+                    if (c == m_transpose_spinner || c == m_channel_in_spinner ||
+                            c == m_program_change_spinner || c == m_channel_out_spinner)
                     {
-                        Fl_Spinner *s = (Fl_Spinner *)c;
+                        Fl_Spinner *s = (Fl_Spinner *) c;
                         label_size = s->textsize();
-                            label_size += adjust;
+                        label_size += adjust;
                         s->textsize(label_size);
                     }
                 }
-            }else
+            }
+            else
             {
                 label_size = w->labelsize();
                 label_size += adjust;
@@ -922,12 +936,12 @@ void Guitar::adjust_label_sizes()
      the relative size better. The disadvantage is that it requires all adjusted
      widgets to be identified by class global to use the minimum global setting
      to adjust by the ratio */
-    
-    if(window_h > (m_window_size_h + c_global_label_resize_increment) ||
-       window_h < (m_window_size_h - c_global_label_resize_increment) )
+
+    if (window_h > (m_window_size_h + c_global_label_resize_increment) ||
+            window_h < (m_window_size_h - c_global_label_resize_increment))
     {
 
-        float ratio = ((float)window_h / c_global_min_window_h);
+        float ratio = ((float) window_h / c_global_min_window_h);
 
         m_reset_button->labelsize(c_global_min_label_size * ratio);
         m_midi_in_group->labelsize(c_global_min_group_label_size * ratio);
@@ -936,35 +950,35 @@ void Guitar::adjust_label_sizes()
         m_transpose_spinner->textsize(c_global_min_spin_text_size * ratio);
         m_channel_in_spinner->labelsize(c_global_min_label_size * ratio);
         m_channel_in_spinner->textsize(c_global_min_spin_text_size * ratio);
-        
+
         m_midi_out_group->labelsize(c_global_min_group_label_size * ratio);
         m_program_change_spinner->labelsize(c_global_min_label_size * ratio);
         m_program_change_spinner->textsize(c_global_min_spin_text_size * ratio);
         m_channel_out_spinner->labelsize(c_global_min_label_size * ratio);
         m_channel_out_spinner->textsize(c_global_min_spin_text_size * ratio);
         m_velocity_slider->labelsize(c_global_min_label_size * ratio);
-        
-        for(int i = 0; i < 25; ++i )
+
+        for (int i = 0; i < 25; ++i)
         {
             m_fret_numbers[i]->labelsize(c_global_min_number_label_size * ratio);
         }
-        
+
         for (int i = 0; i < 6; i++)
         {
             m_gtr_string[i]->labelsize(c_global_min_label_size * ratio);
             m_string_numbers[i]->labelsize(c_global_min_number_label_size * ratio);
         }
-        
-        for(int i = 0; i < 150; ++i)
+
+        for (int i = 0; i < 150; ++i)
         {
             m_fret[i]->labelsize(c_global_min_fret_label_size * ratio);
         }
-        
-        for(int i = 0; i < 10; i++)
+
+        for (int i = 0; i < 10; i++)
         {
             m_marker[i]->labelsize(c_global_min_marker_size * ratio);
         }
-        
+
         m_window_size_h = window_h;
         Fl::redraw();
     }
@@ -1003,7 +1017,8 @@ void Guitar::fretToggle(uint note, bool on_off)
 
                     if (I >= 6 && J >= 24) // when we are done
                         return;
-                } else // user supplied CC starting location string or use first found
+                }
+                else // user supplied CC starting location string or use first found
                 {
                     if (m_have_string_toggle) // user supplied CC for string
                     {
@@ -1011,18 +1026,20 @@ void Guitar::fretToggle(uint note, bool on_off)
                         {
                             toggle_fret((I * 25) + J, on_off);
                             stringToggle(I); // shut off string after we get it
-                            
+
                             m_have_string_toggle = false; // shut off flag for string toggle
                             m_last_used_fret = (I * 25) + J; // save the fret location
                             m_last_fret = true; // set this so we know to use it next time
                             return; // found it so leave
                         }
-                    } else if (m_last_fret) // we have previous fret so use it for calculation
+                    }
+                    else if (m_last_fret) // we have previous fret so use it for calculation
                     {
                         /* after all locations are found then falls through to end which calls calculate_closest_fret() */
                         storeFretLocation[I] = (I * 25) + J;
                         // printf("init store Fret %d\n",storeFretLocation[I]);
-                    } else // we don't have a CC or last fret so this would be the first found
+                    }
+                    else // we don't have a CC or last fret so this would be the first found
                     { // so use it by default
                         toggle_fret((I * 25) + J, on_off);
                         m_last_used_fret = (I * 25) + J; // save the fret location
@@ -1042,9 +1059,9 @@ void Guitar::fretToggle(uint note, bool on_off)
 
 void Guitar::toggle_fret(int location, bool on_off)
 {
-    if(location < 0 || location > 150)
+    if (location < 0 || location > 150)
         return;
-    
+
     Fl::lock();
 
     int string = location / 25;
@@ -1059,11 +1076,12 @@ void Guitar::toggle_fret(int location, bool on_off)
 
     if (on_off) // true is note ON, so display note text
     {
-        if(m_midi_numbers)
+        if (m_midi_numbers)
             m_fret[string + nfret]->copy_label(c_key_table_number[location]);
         else
             m_fret[string + nfret]->copy_label(c_key_table_text[location]);
-    } else // clear note text
+    }
+    else // clear note text
     {
         std::string label = "";
         if (nfret == 0)
@@ -1084,9 +1102,9 @@ void Guitar::transpose_callback(Fl_Spinner* o, void* data)
     ((Guitar*) data)->cb_transpose_callback(o);
 }
 
-void Guitar::cb_reset_callback(void* Gptr )
+void Guitar::cb_reset_callback(void* Gptr)
 {
-    ((Guitar*)Gptr)->reset_all_controls();
+    ((Guitar*) Gptr)->reset_all_controls();
 }
 
 void Guitar::reset_callback(Fl_Button* o, void* data)
@@ -1101,7 +1119,8 @@ void Guitar::cb_control_callback(Fl_Button *b)
         m_bcontrol = false;
         m_last_fret = false;
         m_last_used_fret = NO_FRET;
-    } else
+    }
+    else
     {
         m_bcontrol = true;
     }
@@ -1132,7 +1151,7 @@ void Guitar::cb_fret_callback(Fret* b)
 
             if (m_fret[i]->value() == 1) // if ON note - display text & set midi note on
             {
-                if(m_midi_numbers)
+                if (m_midi_numbers)
                     m_fret[i]->copy_label(c_key_table_number[text_array]);
                 else
                     m_fret[i]->copy_label(c_key_table_text[text_array]);
@@ -1145,7 +1164,8 @@ void Guitar::cb_fret_callback(Fret* b)
 #ifdef JACK_SUPPORT
                 JackSendMidiNote(m_note_array[string][nfret], true);
 #endif                
-            } else // note off - clear text & set midi note off
+            }
+            else // note off - clear text & set midi note off
             {
                 std::string label = "";
                 if (nfret == 0)
@@ -1158,7 +1178,7 @@ void Guitar::cb_fret_callback(Fret* b)
 #ifdef RTMIDI_SUPPORT
                 RtSendMidiNote(m_note_array[string][nfret], false);
 #endif
-                #ifdef JACK_SUPPORT
+#ifdef JACK_SUPPORT
                 JackSendMidiNote(m_note_array[string][nfret], false);
 #endif
             }
@@ -1186,7 +1206,7 @@ void Guitar::fret_callback(Fret* b, void* data)
 {
     if (Fl::event() != FL_DRAG) // user pressed the fret
     {
-        if(Fl::event_button1()) // only on button press, not release
+        if (Fl::event_button1()) // only on button press, not release
             ((Guitar*) data)->cb_fret_callback(b);
     }
     else // dragging on the fret
@@ -1230,7 +1250,7 @@ void Guitar::out_channel_callback(Fl_Spinner* o, void* data)
 {
     ((Guitar*) data)->cb_out_channel_callback(o);
 }
-    
+
 void Guitar::cb_velocity_callback(Fl_Slider* o)
 {
     m_note_on_velocity = (char) o->value();
@@ -1240,7 +1260,6 @@ void Guitar::velocity_callback(Fl_Slider* o, void* data)
 {
     ((Guitar*) data)->cb_velocity_callback(o);
 }
-
 
 void Guitar::cb_string_callback(Fl_Button* o)
 {
@@ -1259,7 +1278,6 @@ void Guitar::string_callback(Fl_Button* o, void* data)
     ((Guitar*) data)->cb_string_callback(o);
 }
 
-
 int Guitar::get_fret_center(uint x_or_y, uint h_or_w)
 {
     return x_or_y + (h_or_w * .5);
@@ -1267,9 +1285,9 @@ int Guitar::get_fret_center(uint x_or_y, uint h_or_w)
 
 int Guitar::calculate_closest_fret()
 {
-    if(m_last_used_fret == NO_FRET)
+    if (m_last_used_fret == NO_FRET)
         return NO_FRET;
-    
+
     int last_X = get_fret_center(m_fret[m_last_used_fret]->x(), m_fret[m_last_used_fret]->h());
     int last_Y = get_fret_center(m_fret[m_last_used_fret]->y(), m_fret[m_last_used_fret]->w());
 
@@ -1309,12 +1327,12 @@ int Guitar::calculate_closest_fret()
     for (int i = 0; i < 6; i++)
         storeFretLocation[i] = NO_FRET; // clear the array
 
-    if(closest_fret != NO_FRET)
+    if (closest_fret != NO_FRET)
     {
         m_last_fret = true;
         m_last_used_fret = closest_fret;
     }
-//     printf("closest_fret %d\n",closest_fret);
+    //     printf("closest_fret %d\n",closest_fret);
 
     return closest_fret;
 }
