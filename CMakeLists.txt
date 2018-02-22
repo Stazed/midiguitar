@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.1)
 
 #set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
-set(PACKAGE_VERSION "0.2.0")
+set(PACKAGE_VERSION "0.3.0")
 message (STATUS "Building Midiguitar version ${PACKAGE_VERSION} for ${CMAKE_SYSTEM_NAME}")
 
 add_definitions (-D'PACKAGE_VERSION="${PACKAGE_VERSION}"')
