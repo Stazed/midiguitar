@@ -17,7 +17,7 @@ How to use midiguitar?
 
 -As a player (pianola)
 
-Midiguitar can display fret locations from midi notes when received from a player. It was designed to work with a sequencer such as seq32, seq42 (or seq24, sequencer64, etc).  When midiguitar receives a midi note,	it will display the note by turning the fret or open string location red, and also indicate the midi note value and letter value.
+Midiguitar can display fret locations from midi notes when received from a player. It was designed to work with a sequencer such as seq32, seq42 (or seq24, sequencer64, etc).  When midiguitar receives a midi note, it will display the note by turning the fret or open string location green, and also indicate the letter value or midi note value.
 
 The basic problem with using midi with a guitar is that unlike piano keyboards, the guitar can play the same tone (midi note) from multiple locations. There is no one to one midi correlation as with a piano keyboard. 
 
@@ -37,6 +37,7 @@ The default CC value can be changed from the command line -s option.
 2.  Send to all frets. (Press the "Control On/Off" button).
 The program will display all possible fret and open string locations based on the midi note received.
 
+MIDI IN:
 The Transpose selector can be used to adjust incoming midi up or down by single notes.
 
 The Midi Channel will select the midi channel to listen. Default '0' will use all channels.
@@ -44,7 +45,14 @@ The Midi Channel will select the midi channel to listen. Default '0' will use al
 -As a MIDI note generator.
 Left mouse press (or drag) on fret or open string to send midi note message.
 
-Use the command line -c option to select the midi channel for sending notes.
+MIDI OUT:
+Select the midi channel for sending notes and program change messages.
+
+Send Program change messages from the "Program" spinner.
+
+Adjust the note velocity sent using the "Velocity" slider.
+
+Use the "Reset" button to send note off's to all MIDI notes, and clear any stuck notes and CC messages.
 
 
 See command line -h for additional options.

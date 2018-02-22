@@ -1,4 +1,7 @@
-INSTALLING
+INSTALLING:
+
+For autotools build:
+
 Run:
 $ autoreconf -i  # to generate configure script
 
@@ -22,3 +25,21 @@ $./configure --enable-alsa
 
 Jack standalone build with jack midi.
 $./configure --enable-jack
+
+
+For Cmake build:
+
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+# make install
+
+To change build options from the build directory:
+
+$ ccmake ..
+
+UNINSTALLING
+From the build directory:
+
+# make uninstall
