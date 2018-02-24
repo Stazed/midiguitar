@@ -70,7 +70,7 @@ int main(int argc, char **argv)
                 printf("         The default CC value is 16.\n");
                 printf("   -t, --guitar_view_type: types 0 = R/h normal, 1 = R/h mirror\n");
                 //                    ", 2 = L/h normal, 3 = L/h mirror\n" );
-                printf("   -n, --client_name <name>: set alsa client name: Default = 'MIDI_Guitar'\n");
+                printf("   -n, --client_name <name>: set program client name: Default = 'MIDI_Guitar'\n");
                 printf("   -c, --midi_channel: set midi channel for sending notes from fret mouse press (1 to 16)\n");
                 printf("   -m, --midi_numbers: display midi numbers on fret instead of note letter\n");
                 printf("\n\n\n");
