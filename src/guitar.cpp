@@ -135,12 +135,16 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
             m_channel_out_spinner->callback((Fl_Callback*) out_channel_callback, this);
         } // Fl_Spinner* m_channel_out_spinner
         {
-            m_velocity_slider = new Fl_Slider(600, 35, 145, 17, "Velocity");
+            m_velocity_slider = new Fl_Value_Slider(600, 35, 145, 17, "Note Velocity");
             m_velocity_slider->align(Fl_Align(FL_ALIGN_TOP));
             m_velocity_slider->type(FL_HOR_NICE_SLIDER);
             m_velocity_slider->minimum(0);
             m_velocity_slider->maximum(127);
+            m_velocity_slider->tooltip("Adjust note send velocity");
             m_velocity_slider->value((double) NOTE_ON_VELOCITY);
+            m_velocity_slider->precision(0);
+            m_velocity_slider->step(1);
+            m_velocity_slider->textsize(c_global_min_slide_text_size);
             m_velocity_slider->labelsize(c_global_min_label_size);
             m_velocity_slider->callback((Fl_Callback*) velocity_callback, this);
         } // Fl_Slider* o
@@ -155,7 +159,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
             m_ctrl_change_slider->precision(0);
             m_ctrl_change_slider->step(1);
             m_ctrl_change_slider->labelsize(c_global_min_label_size);
-            m_ctrl_change_slider->textsize(c_global_min_spin_text_size);
+            m_ctrl_change_slider->textsize(c_global_min_slide_text_size);
             m_ctrl_change_slider->callback((Fl_Callback*) ctrl_change_callback, this);
         }
         {
@@ -1033,9 +1037,9 @@ void Guitar::adjust_label_sizes()
         m_channel_out_spinner->labelsize(c_global_min_label_size * ratio);
         m_channel_out_spinner->textsize(c_global_min_spin_text_size * ratio);
         m_velocity_slider->labelsize(c_global_min_label_size * ratio);
-
+        m_velocity_slider->textsize(c_global_min_slide_text_size * ratio);
         m_ctrl_change_slider->labelsize(c_global_min_label_size * ratio);
-        m_ctrl_change_slider->textsize(c_global_min_spin_text_size * ratio);
+        m_ctrl_change_slider->textsize(c_global_min_slide_text_size * ratio);
         m_CC_change_spinner->labelsize(c_global_min_label_size * ratio);
         m_CC_change_spinner->textsize(c_global_min_spin_text_size * ratio);
 
@@ -1360,12 +1364,12 @@ void Guitar::out_channel_callback(Fl_Spinner* o, void* data)
     ((Guitar*) data)->cb_out_channel_callback(o);
 }
 
-void Guitar::cb_velocity_callback(Fl_Slider* o)
+void Guitar::cb_velocity_callback(Fl_Value_Slider* o)
 {
     m_note_on_velocity = (char) o->value();
 }
 
-void Guitar::velocity_callback(Fl_Slider* o, void* data)
+void Guitar::velocity_callback(Fl_Value_Slider* o, void* data)
 {
     ((Guitar*) data)->cb_velocity_callback(o);
 }

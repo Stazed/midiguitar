@@ -47,6 +47,7 @@ const uint c_global_label_resize_increment  = 20;
 const uint c_global_min_group_label_size    = 10;
 const uint c_global_min_label_size          = 14;
 const uint c_global_min_spin_text_size      = 14;
+const uint c_global_min_slide_text_size     = 11;
 const uint c_global_min_number_label_size   = 9;
 const uint c_global_min_fret_label_size     = 8;
 const uint c_global_min_marker_size         = 60;

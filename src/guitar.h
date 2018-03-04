@@ -82,7 +82,7 @@ private:
     Fl_Group        *m_midi_out_group;
     Fl_Spinner      *m_program_change_spinner;
     Fl_Spinner      *m_channel_out_spinner;
-    Fl_Slider       *m_velocity_slider;
+    Fl_Value_Slider *m_velocity_slider;
     Fl_Value_Slider *m_ctrl_change_slider;
     Fl_Spinner      *m_CC_change_spinner;
     
@@ -106,8 +106,8 @@ private:
     void cb_out_channel_callback(Fl_Spinner*);
     static void out_channel_callback(Fl_Spinner*, void*);
     
-    void cb_velocity_callback(Fl_Slider*);
-    static void velocity_callback(Fl_Slider*, void*);
+    void cb_velocity_callback(Fl_Value_Slider*);
+    static void velocity_callback(Fl_Value_Slider*, void*);
     
     void cb_ctrl_change_callback(Fl_Value_Slider*);
     static void ctrl_change_callback(Fl_Value_Slider*, void*);
