@@ -45,6 +45,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     m_midi_out_channel(a_channel),
     m_midi_in_channel(0),
     m_note_on_velocity(NOTE_ON_VELOCITY),
+    m_midi_CC_number(0),
     m_window_size_h(c_global_min_window_h),
     m_midi_numbers(midi_numbers)
 #ifdef RTMIDI_SUPPORT
@@ -108,7 +109,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
     }
 
     {
-        m_midi_out_group = new Fl_Group(420, 13, 365, 51, "Midi Out");
+        m_midi_out_group = new Fl_Group(420, 13, 580, 51, "Midi Out");
         m_midi_out_group->labelsize(c_global_min_group_label_size);
         m_midi_out_group->box(FL_BORDER_BOX);
         {
@@ -136,13 +137,38 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
         {
             m_velocity_slider = new Fl_Slider(600, 35, 145, 17, "Velocity");
             m_velocity_slider->align(Fl_Align(FL_ALIGN_TOP));
-            m_velocity_slider->type(FL_HORIZONTAL);
+            m_velocity_slider->type(FL_HOR_NICE_SLIDER);
             m_velocity_slider->minimum(0);
             m_velocity_slider->maximum(127);
             m_velocity_slider->value((double) NOTE_ON_VELOCITY);
             m_velocity_slider->labelsize(c_global_min_label_size);
             m_velocity_slider->callback((Fl_Callback*) velocity_callback, this);
         } // Fl_Slider* o
+        {
+            m_ctrl_change_slider = new Fl_Value_Slider(785, 35, 145, 17, "CC Value");
+            m_ctrl_change_slider->align(Fl_Align(FL_ALIGN_TOP));
+            m_ctrl_change_slider->type(FL_HOR_NICE_SLIDER);
+            m_ctrl_change_slider->minimum(0);
+            m_ctrl_change_slider->maximum(127);
+            m_ctrl_change_slider->tooltip("Adjust Control Change Value");
+            m_ctrl_change_slider->value((double) 0);
+            m_ctrl_change_slider->precision(0);
+            m_ctrl_change_slider->step(1);
+            m_ctrl_change_slider->labelsize(c_global_min_label_size);
+            m_ctrl_change_slider->textsize(c_global_min_spin_text_size);
+            m_ctrl_change_slider->callback((Fl_Callback*) ctrl_change_callback, this);
+        }
+        {
+            m_CC_change_spinner = new Fl_Spinner(940, 30, 50, 25, "CC Num");
+            m_CC_change_spinner->minimum(0);
+            m_CC_change_spinner->maximum(127);
+            m_CC_change_spinner->tooltip("Set Control Change Number");
+            m_CC_change_spinner->value(0);
+            m_CC_change_spinner->align(Fl_Align(FL_ALIGN_TOP));
+            m_CC_change_spinner->labelsize(c_global_min_label_size);
+            m_CC_change_spinner->textsize(c_global_min_spin_text_size);
+            m_CC_change_spinner->callback((Fl_Callback*) CC_number_callback, this);
+        } // Fl_Spinner* m_program_change_spinner
         m_midi_out_group->end(); // Must remember to do this or everything after group declaration is included!
         Fl_Group::current()->resizable(m_midi_out_group);
     }
@@ -484,6 +510,18 @@ void Guitar::RtSendProgramChange(uint a_change)
     m_message.clear();
     m_message.push_back(EVENT_PROGRAM_CHANGE + m_midi_out_channel);
     m_message.push_back(a_change);
+
+    m_midiOut->sendMessage(&m_message);
+}
+
+void Guitar::RtSendCtrlChange(uint a_CC) 
+{
+    unsigned char value = 0;
+    m_message.clear();
+
+    m_message.push_back(EVENT_CONTROL_CHANGE + m_midi_out_channel);
+    m_message.push_back(m_midi_CC_number);
+    m_message.push_back(a_CC);      // value of CC
 
     m_midiOut->sendMessage(&m_message);
 }
@@ -957,6 +995,11 @@ void Guitar::adjust_label_sizes()
         m_channel_out_spinner->labelsize(c_global_min_label_size * ratio);
         m_channel_out_spinner->textsize(c_global_min_spin_text_size * ratio);
         m_velocity_slider->labelsize(c_global_min_label_size * ratio);
+        
+        m_ctrl_change_slider->labelsize(c_global_min_label_size * ratio);
+        m_ctrl_change_slider->textsize(c_global_min_spin_text_size * ratio);
+        m_CC_change_spinner->labelsize(c_global_min_label_size * ratio);
+        m_CC_change_spinner->textsize(c_global_min_spin_text_size * ratio);
 
         for (int i = 0; i < 25; ++i)
         {
@@ -1239,6 +1282,29 @@ void Guitar::cb_program_callback(Fl_Spinner* o)
 void Guitar::program_callback(Fl_Spinner* o, void* data)
 {
     ((Guitar*) data)->cb_program_callback(o);
+}
+
+void Guitar::cb_ctrl_change_callback(Fl_Value_Slider* o)
+{
+#ifdef RTMIDI_SUPPORT
+    RtSendCtrlChange((uint) o->value());
+#endif
+
+}
+
+void Guitar::ctrl_change_callback(Fl_Value_Slider* o, void* data)
+{
+    ((Guitar*) data)->cb_ctrl_change_callback(o);
+}
+
+void Guitar::cb_CC_number_callback(Fl_Spinner* o)
+{
+    m_midi_CC_number = o->value();
+}
+
+void Guitar::CC_number_callback(Fl_Spinner* o, void* data)
+{
+    ((Guitar*) data)->cb_CC_number_callback(o);
 }
 
 void Guitar::cb_out_channel_callback(Fl_Spinner* o)

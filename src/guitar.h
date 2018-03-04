@@ -29,6 +29,7 @@
 #include <FL/Fl_Spinner.H>
 #include <FL/Fl_Round_Button.H>
 #include <FL/Fl_Text_Display.H>
+#include <FL/Fl_Value_Slider.H>
 #include <sstream>
 #include "globals.h"
 
@@ -82,6 +83,8 @@ private:
     Fl_Spinner      *m_program_change_spinner;
     Fl_Spinner      *m_channel_out_spinner;
     Fl_Slider       *m_velocity_slider;
+    Fl_Value_Slider *m_ctrl_change_slider;
+    Fl_Spinner      *m_CC_change_spinner;
     
     void cb_reset_callback(void* Gptr);
     static void reset_callback(Fl_Button*, void*);
@@ -106,6 +109,12 @@ private:
     void cb_velocity_callback(Fl_Slider*);
     static void velocity_callback(Fl_Slider*, void*);
     
+    void cb_ctrl_change_callback(Fl_Value_Slider*);
+    static void ctrl_change_callback(Fl_Value_Slider*, void*);
+    
+    void cb_CC_number_callback(Fl_Spinner*);
+    static void CC_number_callback(Fl_Spinner*, void*);
+    
     void cb_fret_callback(Fret*);
     static void fret_callback(Fret*, void*);
     
@@ -124,6 +133,7 @@ private:
     static void RtMidiCallback(double deltatime, std::vector< unsigned char > *message, void *userData);
     void RtSendMidiNote(uint note, bool OnorOff);    // bool OnorOff true = ON, false = Off
     void RtSendProgramChange(uint a_change);
+    void RtSendCtrlChange(uint a_CC);
 #endif    
 
 #ifdef ALSA_SUPPORT
@@ -171,6 +181,7 @@ private:
     char m_midi_out_channel;
     char m_midi_in_channel;
     char m_note_on_velocity;
+    char m_midi_CC_number;
     int m_window_size_h;
     bool m_midi_numbers;
 
