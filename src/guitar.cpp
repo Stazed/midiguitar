@@ -514,14 +514,14 @@ void Guitar::RtSendProgramChange(uint a_change)
     m_midiOut->sendMessage(&m_message);
 }
 
-void Guitar::RtSendCtrlChange(uint a_CC) 
+void Guitar::RtSendCtrlChange(uint a_CC)
 {
     unsigned char value = 0;
     m_message.clear();
 
     m_message.push_back(EVENT_CONTROL_CHANGE + m_midi_out_channel);
     m_message.push_back(m_midi_CC_number);
-    m_message.push_back(a_CC);      // value of CC
+    m_message.push_back(a_CC); // value of CC
 
     m_midiOut->sendMessage(&m_message);
 }
@@ -636,6 +636,21 @@ void Guitar::alsaSendProgramChange(uint a_change)
     snd_seq_ev_set_pgmchange(&m_ev, m_midi_out_channel, a_change);
 
     /* Send the program change to out port */
+    snd_seq_ev_set_source(&m_ev, out_port);
+    snd_seq_ev_set_subs(&m_ev);
+    snd_seq_ev_set_direct(&m_ev);
+    snd_seq_event_output_direct(mHandle, &m_ev);
+    snd_seq_drain_output(mHandle);
+
+    snd_seq_ev_clear(&m_ev);
+}
+
+void Guitar::alsaSendCtrlChange(uint a_CC)
+{
+    snd_seq_ev_clear(&m_ev);
+    snd_seq_ev_set_controller(&m_ev, m_midi_out_channel, m_midi_CC_number, a_CC);
+
+    /* Send the control change to out port */
     snd_seq_ev_set_source(&m_ev, out_port);
     snd_seq_ev_set_subs(&m_ev);
     snd_seq_ev_set_direct(&m_ev);
@@ -798,6 +813,29 @@ void Guitar::JackSendProgramChange(uint a_change)
 
     // Write full message to buffer
     JackSendMessage(jack_midi_data, size);
+}
+
+void Guitar::JackSendCtrlChange(uint a_CC)
+{
+    const size_t size = 3;
+    int nBytes = static_cast<int> (size);
+    jack_midi_data_t jack_midi_data[size];
+
+    jack_midi_data[0] = EVENT_CONTROL_CHANGE + m_midi_out_channel;
+    jack_midi_data[1] = m_midi_CC_number;
+    jack_midi_data[2] = a_CC;
+
+    // Write full message to buffer
+    JackSendMessage(jack_midi_data, size);
+
+    /*    unsigned char value = 0;
+        m_message.clear();
+
+        m_message.push_back(EVENT_CONTROL_CHANGE + m_midi_out_channel);
+        m_message.push_back(m_midi_CC_number);
+        m_message.push_back(a_CC);      // value of CC
+
+        m_midiOut->sendMessage(&m_message);*/
 }
 
 void Guitar::JackSendMessage(jack_midi_data_t *a_message, size_t size)
@@ -995,7 +1033,7 @@ void Guitar::adjust_label_sizes()
         m_channel_out_spinner->labelsize(c_global_min_label_size * ratio);
         m_channel_out_spinner->textsize(c_global_min_spin_text_size * ratio);
         m_velocity_slider->labelsize(c_global_min_label_size * ratio);
-        
+
         m_ctrl_change_slider->labelsize(c_global_min_label_size * ratio);
         m_ctrl_change_slider->textsize(c_global_min_spin_text_size * ratio);
         m_CC_change_spinner->labelsize(c_global_min_label_size * ratio);
@@ -1289,7 +1327,12 @@ void Guitar::cb_ctrl_change_callback(Fl_Value_Slider* o)
 #ifdef RTMIDI_SUPPORT
     RtSendCtrlChange((uint) o->value());
 #endif
-
+#ifdef ALSA_SUPPORT
+    alsaSendCtrlChange((uint) o->value());
+#endif
+#ifdef JACK_SUPPORT
+    JackSendCtrlChange((uint) o->value());
+#endif
 }
 
 void Guitar::ctrl_change_callback(Fl_Value_Slider* o, void* data)

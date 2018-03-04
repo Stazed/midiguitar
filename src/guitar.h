@@ -146,6 +146,7 @@ private:
     void alsaGetMidiMessages();     // used in Timeout() for polling alsa Midi In
     void alsaSendMidiNote(uint a_note, bool On_or_Off);
     void alsaSendProgramChange(uint a_change);
+    void alsaSendCtrlChange(uint a_CC);
 #endif
     
 #ifdef JACK_SUPPORT
@@ -161,6 +162,7 @@ private:
     void JackPlayMidiGuitar(jack_midi_event_t *midievent);
     void JackSendMidiNote(uint note, bool On_or_Off);
     void JackSendProgramChange(uint a_change);
+    void JackSendCtrlChange(uint a_CC);
     void JackSendMessage(jack_midi_data_t *a_message, size_t size);
 #endif
 
