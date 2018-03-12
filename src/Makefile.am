@@ -7,4 +7,4 @@ CFLAGS = -Wall -Wextra
 bin_PROGRAMS = midiguitar
 
 #FIXME: don't compile RtMidi if not defined
-midiguitar_SOURCES = main.cpp guitar.cpp RtMidi.cpp guitar.h RtMidi.h globals.h
+midiguitar_SOURCES = main.cpp guitar.cpp sliderW.cpp RtMidi.cpp guitar.h sliderW.h RtMidi.h globals.h

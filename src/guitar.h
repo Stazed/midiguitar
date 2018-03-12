@@ -29,9 +29,10 @@
 #include <FL/Fl_Spinner.H>
 #include <FL/Fl_Round_Button.H>
 #include <FL/Fl_Text_Display.H>
-#include <FL/Fl_Value_Slider.H>
+//#include <FL/Fl_Value_Slider.H>
 #include <sstream>
 #include "globals.h"
+#include "sliderW.h"
 
 #ifndef CMAKE_BUILD
 #include "config.h"
@@ -82,8 +83,8 @@ private:
     Fl_Group        *m_midi_out_group;
     Fl_Spinner      *m_program_change_spinner;
     Fl_Spinner      *m_channel_out_spinner;
-    Fl_Value_Slider *m_velocity_slider;
-    Fl_Value_Slider *m_ctrl_change_slider;
+    SliderW         *m_velocity_slider;
+    SliderW         *m_ctrl_change_slider;
     Fl_Spinner      *m_CC_change_spinner;
     
     void cb_reset_callback(void* Gptr);

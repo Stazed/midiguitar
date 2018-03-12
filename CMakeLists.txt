@@ -9,7 +9,7 @@ add_definitions (-D'PACKAGE_VERSION="${PACKAGE_VERSION}"')
 add_definitions(-DCMAKE_BUILD=1)
 project(midiguitar)
 
-add_executable(midiguitar src/main.cpp src/guitar.cpp src/RtMidi.cpp)
+add_executable(midiguitar src/main.cpp src/guitar.cpp src/RtMidi.cpp src/sliderW.cpp)
 
 option (EnableRtMidi "Enable RtMidi build. RtMidi is the default build" ON)
 option (EnableJackStandalone "Enable jack standalone support" OFF)

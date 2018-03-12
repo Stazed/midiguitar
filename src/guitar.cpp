@@ -135,7 +135,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
             m_channel_out_spinner->callback((Fl_Callback*) out_channel_callback, this);
         } // Fl_Spinner* m_channel_out_spinner
         {
-            m_velocity_slider = new Fl_Value_Slider(600, 35, 145, 17, "Note Velocity");
+            m_velocity_slider = new SliderW(600, 35, 145, 17, "Note Velocity");
             m_velocity_slider->align(Fl_Align(FL_ALIGN_TOP));
             m_velocity_slider->type(FL_HOR_NICE_SLIDER);
             m_velocity_slider->minimum(0);
@@ -149,7 +149,7 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
             m_velocity_slider->callback((Fl_Callback*) velocity_callback, this);
         } // Fl_Slider* o
         {
-            m_ctrl_change_slider = new Fl_Value_Slider(785, 35, 145, 17, "CC Value");
+            m_ctrl_change_slider = new SliderW(785, 35, 145, 17, "CC Value");
             m_ctrl_change_slider->align(Fl_Align(FL_ALIGN_TOP));
             m_ctrl_change_slider->type(FL_HOR_NICE_SLIDER);
             m_ctrl_change_slider->minimum(0);
