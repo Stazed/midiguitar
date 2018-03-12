@@ -14,9 +14,6 @@
   along with this program; if not, write to the Free Software Foundation,
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
-  This class is the custom slider used by all the plugins. It creates the handle
-  with LED that changes color when moved, etc.. 
- 
  */
 
 #include "sliderW.h"
@@ -31,7 +28,7 @@ void SliderW::draw()
     int bxx = x(), byy = y(), bww = w(), bhh = h();
     
     /* This whole point of this override class is to allow the value display box
-     * to resize. FLTK hard coded the width to 35. The original code:
+     * to resize. FLTK hard coded the width to 35 & height to 25. The original code:
      *  bww = 35;       bhh = 25;
      *  sxx += 35;      syy += 25;
      *  sww -= 35;      shh -= 25;

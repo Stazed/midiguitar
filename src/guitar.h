@@ -29,7 +29,6 @@
 #include <FL/Fl_Spinner.H>
 #include <FL/Fl_Round_Button.H>
 #include <FL/Fl_Text_Display.H>
-//#include <FL/Fl_Value_Slider.H>
 #include <sstream>
 #include "globals.h"
 #include "sliderW.h"
