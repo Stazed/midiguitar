@@ -27,7 +27,7 @@ class SliderW : public Fl_Value_Slider
 {
 public:
     SliderW(int x, int y, int w, int h, const char *label = 0);
-    void draw() override;
+    void draw();
 private:
 };
 #endif

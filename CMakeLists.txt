@@ -16,6 +16,19 @@ option (EnableJackStandalone "Enable jack standalone support" OFF)
 option (EnableAlsaLegacy "Enable legacy alsa support" OFF)
 option (BuildForDebug "Include gdb debugging support" OFF)
 
+
+set(CMAKE_BUILD_TYPE "Release")
+
+set (BuildOptionsBasic
+    "-Wno-unused-parameter -O3"
+    CACHE STRING "Basic complier options"
+)
+
+set (BuildOptionsDebug
+    "-O0 -g3 -ggdb"
+    CACHE STRING "Debug build flags"
+)
+
 find_package (PkgConfig REQUIRED)
 
 # dependencies
@@ -45,6 +58,7 @@ if (BuildForDebug)
     message (STATUS "Building for ${CMAKE_BUILD_TYPE}, flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 else (BuildForDebug)
     set (CMAKE_BUILD_TYPE "Release")
+    set (CMAKE_CXX_FLAGS_RELEASE ${BuildOptionsBasic})
 endif (BuildForDebug)
 
 if (EnableRtMidi)
