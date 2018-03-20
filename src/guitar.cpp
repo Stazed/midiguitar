@@ -900,7 +900,7 @@ void Guitar::Timeout(void)
 #endif
     adjust_label_sizes();
 
-    Fl::repeat_timeout(0.005, Guitar::TimeoutStatic, this);
+    Fl::repeat_timeout(0.04, Guitar::TimeoutStatic, this);
 }
 
 void Guitar::triggerFretNotes()
