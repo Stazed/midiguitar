@@ -53,7 +53,8 @@ Send Program change messages from the "Program" spinner.
 Adjust the note velocity sent using the "Velocity" slider.
 
 Use the "Reset" button to send note off's to all MIDI notes, and clear any stuck notes and CC messages.
-
+ 
+Send Control Codes CC using the CC Value slider.
 
 See command line -h for additional options.
 
