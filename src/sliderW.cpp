@@ -71,3 +71,33 @@ void SliderW::draw()
     /* Text inside the value display */
     fl_draw(buf, bxx, byy, bww, bhh, FL_ALIGN_CLIP);
 }
+
+int SliderW::handle(int event)
+{
+    if (event == FL_PUSH && Fl::visible_focus())
+    {
+        Fl::focus(this);
+        redraw();
+    }
+
+    int sxx = x(), syy = y(), sww = w(), shh = h();
+    int bww = w(), bhh = h();
+
+    if (horizontal())
+    {
+        bww = w() * .25;        // value box width (magic number % of total width)
+        sxx += bww;             // adjust slider x location based on above box width
+        sww -= bww;             // reduce slider width by box width
+    }
+    else
+    {
+        bhh = h() * .18;        // value box height (magic number % of total height)
+        syy += bhh;             // adjust slider y location based on above box height
+        shh -= bhh;             // reduce slider height by box height
+    }
+    return Fl_Slider::handle(event,
+                             sxx+Fl::box_dx(box()),
+                             syy+Fl::box_dy(box()),
+                             sww-Fl::box_dw(box()),
+                             shh-Fl::box_dh(box()));
+}
