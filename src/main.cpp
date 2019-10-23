@@ -31,6 +31,7 @@ option long_options[] ={
     {"guitar_view_type", required_argument, 0, 't'},
     {"client_name", required_argument, 0, 'n'},
     {"midi_channel", required_argument, 0, 'c'},
+    {"Fltk scheme", required_argument, 0, 'S'},
     {"display_midi_numbers", 0, 0, 'm'},
     {0, 0, 0, 0}
 };
@@ -42,6 +43,7 @@ int main(int argc, char **argv)
     uint guitar_type = RH_STANDARD_GUITAR;
     uint midi_channel = 0;
     bool display_midi_numbers = false;
+    uint scheme = 0;
 
     /* parse parameters */
     int c;
@@ -51,7 +53,7 @@ int main(int argc, char **argv)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "hs:t:n:c:m", long_options, &option_index);
+        c = getopt_long(argc, argv, "hs:t:n:c:S:m", long_options, &option_index);
 
         /* Detect the end of the options. */
         if (c == -1)
@@ -72,6 +74,7 @@ int main(int argc, char **argv)
                 //                    ", 2 = L/h normal, 3 = L/h mirror\n" );
                 printf("   -n, --client_name <name>: set program client name: Default = 'MIDI_Guitar'\n");
                 printf("   -c, --midi_channel: set midi channel for sending notes from fret mouse press (1 to 16)\n");
+                printf("   -S, --Fltk_scheme: set fltk scheme type 1 = none, 2 = gtk+, 3 = plastic, 4 = gleam\n");
                 printf("   -m, --midi_numbers: display midi numbers on fret instead of note letter\n");
                 printf("\n\n\n");
 
@@ -109,6 +112,12 @@ int main(int argc, char **argv)
             case 'm':
                 display_midi_numbers = true;
                 break;
+            case 'S':
+                if (atoi(optarg) >= 1 && atoi(optarg) <= 4)
+                {
+                    scheme = (atoi(optarg));
+                }
+                break;
         }
     }
 
@@ -116,6 +125,26 @@ int main(int argc, char **argv)
     Guitar* MidiGuitar = 0;
 
     MidiGuitar = new Guitar(guitar_type, guitar_string_param, client_name, midi_channel, display_midi_numbers);
+    
+    /* Apply user selected scheme */
+    switch (scheme)
+    {
+    case 0:
+        Fl::scheme("");
+        break;
+    case 1:
+        Fl::scheme("none");
+        break;
+    case 2:
+        Fl::scheme("gtk+");
+        break;
+    case 3:
+        Fl::scheme("plastic");
+        break;
+    case 4:
+        Fl::scheme("gleam");
+        break;
+    }
 
     MidiGuitar->show();
 
