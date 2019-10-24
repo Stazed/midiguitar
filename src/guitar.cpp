@@ -75,10 +75,10 @@ Guitar::Guitar(uint a_type, uint a_CC, std::string name, uint a_channel, bool mi
         m_midi_in_group->labelcolor(FL_WHITE);
         m_midi_in_group->box(FL_EMBOSSED_FRAME);
         {
-            m_control_button = new Fl_Button(150, 15, 70, 45, "Control\n On/Off");
+            m_control_button = new Fl_Button(150, 15, 70, 45, "Control\n On");
             m_control_button->type(1);
-            m_control_button->tooltip("Press to stop calculation of nearest fret.\n"
-                    "If pressed all possible note locations will be triggered.");
+            m_control_button->tooltip("When control is 'On', nearest fret location will be calculated.\n"
+                    "When control is 'Off', all possible fret locations will be triggered.");
             m_control_button->color(FL_GREEN);
             m_control_button->selection_color(FL_FOREGROUND_COLOR);
             m_control_button->labelsize(c_global_min_label_size);
@@ -1220,10 +1220,12 @@ void Guitar::cb_control_callback(Fl_Button *b)
         m_bcontrol = false;
         m_last_fret = false;
         m_last_used_fret = NO_FRET;
+        b->label("Control\n Off");
     }
     else
     {
         m_bcontrol = true;
+        b->label("Control\n On");
     }
 }
 
