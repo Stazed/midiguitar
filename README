@@ -58,6 +58,9 @@ Send Control Codes CC using the CC Value slider.
 
 See command line -h for additional options.
 
+
+![screenshot](https://raw.github.com/Stazed/midiguitar/wip/doc/midiguitar-3.2.png "Midiguitar Dark Gleam Theme")
+
 This program was written as a practice project for learning C++, fltk, alsa, jack, RtMidi and anything else I can throw in :).
 
 Your mileage may vary!!!
