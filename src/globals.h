@@ -18,6 +18,8 @@
 //
 //-----------------------------------------------------------------------------
 
+#ifndef GLOBALS_H
+#define GLOBALS_H
 
 #ifndef CMAKE_BUILD
 #include "config.h"
@@ -53,7 +55,7 @@ const uint c_global_min_fret_label_size     = 8;
 const uint c_global_min_marker_size         = 60;
 
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >( \
+#define SSTR( x ) dynamic_cast< std::ostringstream && >( \
         ( std::ostringstream() << std::dec << x ) ).str()
 
 
@@ -128,3 +130,5 @@ const uint guitarReverseNote[6][25] ={
     {64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88}, // E high
 };
 #endif
+
+#endif  // GLOBALS_H
