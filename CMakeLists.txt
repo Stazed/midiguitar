@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.5.1)
 
 #set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -32,6 +32,7 @@ set (BuildOptionsDebug
 find_package (PkgConfig REQUIRED)
 
 # dependencies
+SET(FLTK_SKIP_OPENGL TRUE) 
 find_package (ALSA REQUIRED)
 pkg_check_modules (JACK REQUIRED jack>=0.115.6)
 
