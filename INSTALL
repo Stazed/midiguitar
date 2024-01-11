@@ -1,45 +1,26 @@
 INSTALLING:
 
-For autotools build:
-
-Run:
-$ autoreconf -i  # to generate configure script
-
-Then:
-$ ./configure
-$ make
-# make install
-
-
-UNINSTALLING
-For uninstalling, run:
-# make uninstall
-from the top folder of this package
-
-Build options: 
-RtMidi is the default build and will select between jack then alsa depending on what is available.
-$./configure --disable-rtmidi
-
-Legacy alsa build using alsa midi.
-$./configure --enable-alsa
-
-Jack standalone build with jack midi.
-$./configure --enable-jack
-
-
 For Cmake build:
 
 $ mkdir build
 $ cd build
 $ cmake ..
 $ make
-# make install
+# make install (as root)
 
 To change build options from the build directory:
 
-$ ccmake ..
+Build options: 
+RtMidi is the default build and will select between jack then alsa depending on what is available.
+$cmake -DEnableRtMidi=OFF ..
 
-UNINSTALLING
+Legacy alsa build using alsa midi.
+$cmake -DEnableAlsaLegacy=ON ..
+
+Jack standalone build with jack midi.
+$cmake -DEnableJackStandalone=ON ..
+
+UNINSTALLING:
 From the build directory:
 
-# make uninstall
+# make uninstall (as root)
