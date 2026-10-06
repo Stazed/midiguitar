@@ -37,12 +37,14 @@ find_package (ALSA REQUIRED)
 pkg_check_modules (JACK REQUIRED jack>=0.115.6)
 
 # fltk
+SET(FLTK_SKIP_OPENGL TRUE)
 find_package(FLTK 1.4 CONFIG)
 if(TARGET fltk::fltk)   # Modern cmake
     message(STATUS "FLTK CONFIG is available")
     include_directories(${FLTK_INCLUDE_DIR})
     target_link_libraries(midiguitar fltk::fltk)
 else()                  # Legacy cmake
+    find_package(FLTK REQUIRED)
     if (FLTK_FOUND)
         include_directories(${FLTK_INCLUDE_DIR})
         target_link_libraries(midiguitar ${FLTK_LIBRARIES})
