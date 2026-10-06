@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.5.1...3.31.1)
 
 #set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -37,11 +37,17 @@ find_package (ALSA REQUIRED)
 pkg_check_modules (JACK REQUIRED jack>=0.115.6)
 
 # fltk
-find_package (FLTK REQUIRED)
-if (FLTK_FOUND)
+find_package(FLTK 1.4 CONFIG)
+if(TARGET fltk::fltk)   # Modern cmake
+    message(STATUS "FLTK CONFIG is available")
     include_directories(${FLTK_INCLUDE_DIR})
-    target_link_libraries(midiguitar ${FLTK_LIBRARIES})
-endif (FLTK_FOUND)
+    target_link_libraries(midiguitar fltk::fltk)
+else()                  # Legacy cmake
+    if (FLTK_FOUND)
+        include_directories(${FLTK_INCLUDE_DIR})
+        target_link_libraries(midiguitar ${FLTK_LIBRARIES})
+    endif (FLTK_FOUND)
+endif()
 
 
 find_package(Threads REQUIRED)
